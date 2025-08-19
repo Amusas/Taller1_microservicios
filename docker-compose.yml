@@ -1,0 +1,62 @@
+services:
+  login-service:
+    # Si ya tienes la imagen construida puedes usar `image: ${LOGIN_SERVICE_IMAGE}` en lugar de build
+    build: ./servicio-login
+    container_name: login-service
+    restart: unless-stopped
+    environment:
+      # Rutas internas dentro del contenedor donde montamos las llaves
+      - PUBLIC_KEY_PATH=/app/keys/public-key.pem
+      - PRIVATE_KEY_PATH=/app/keys/private-key.pem
+    volumes:
+      - ./keys:/app/keys:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  greeting-service:
+    build: ./servicio-saludo
+    container_name: greeting-service
+    restart: unless-stopped
+    environment:
+      # Ruta a la public key dentro del contenedor para validar tokens
+      - PUBLIC_KEY_PATH=/app/keys/public-key.pem
+    volumes:
+      - ./keys:/app/keys:ro
+    depends_on:
+      - login-service
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  node-client:
+    build: ./client-service
+    container_name: node-client
+    restart: "no"
+    environment:
+      # El cliente usa los nombres de contenedor para resolver servicios en la red interna
+      - AUTH_URL=http://login-service:8080/login
+      - GREETING_URL=http://greeting-service:8081/saludo
+    depends_on:
+      - login-service
+      - greeting-service
+    stdin_open: true   # necesario si quieres interacción por consola (readline)
+    tty: true
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
