@@ -1,6 +1,5 @@
 services:
   login-service:
-    # Si ya tienes la imagen construida puedes usar `image: ${LOGIN_SERVICE_IMAGE}` en lugar de build
     build: ./servicio-login
     container_name: login-service
     restart: unless-stopped
@@ -52,7 +51,7 @@ services:
     depends_on:
       - login-service
       - greeting-service
-    stdin_open: true   # necesario si quieres interacción por consola (readline)
+    stdin_open: true 
     tty: true
     networks:
       - app-network

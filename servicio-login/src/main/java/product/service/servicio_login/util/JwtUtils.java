@@ -68,6 +68,9 @@ public class JwtUtils {
      */
     private String buildJwtToken(LoginRequest user, Instant issuedAt, Instant expiration) {
         return Jwts.builder()
+                .header()               // 👈 abre el builder del header
+                .add("typ", "JWT")      // 👈 añade el campo "typ"
+                .and()                  // 👈 vuelve al builder del payload
                 .subject(user.name())
                 .issuedAt(Date.from(issuedAt))
                 .claim("iss", "ingesis.uniquindio.edu.co")
@@ -75,5 +78,6 @@ public class JwtUtils {
                 .signWith(KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
                 .compact();
     }
+
 
 }
