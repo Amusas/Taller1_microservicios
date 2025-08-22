@@ -1,0 +1,14 @@
+{
+  "name": "servicio-datos",
+  "version": "1.0.0",
+  "description": "Microservicio para gestionar usuarios con PostgreSQL",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.11.3"
+  }
+}
