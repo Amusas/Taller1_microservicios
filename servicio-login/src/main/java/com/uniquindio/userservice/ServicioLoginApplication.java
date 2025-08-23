@@ -1,4 +1,4 @@
-package product.service.servicio_login;
+package com.uniquindio.userService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

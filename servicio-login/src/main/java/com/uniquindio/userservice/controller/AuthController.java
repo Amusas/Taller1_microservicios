@@ -1,5 +1,7 @@
-package product.service.servicio_login.controller;
+package com.uniquindio.userservice.controller;
 
+import com.uniquindio.userservice.dto.LoginRequest;
+import com.uniquindio.userservice.util.JwtUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -7,13 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import product.service.servicio_login.dto.LoginRequest;
-import product.service.servicio_login.util.JwtUtils;
 
 @RestController
-@RequestMapping("/login")
+@RequestMapping("/api/v1/login")
 @RequiredArgsConstructor
-public class LoginController {
+public class AuthController {
 
     private final JwtUtils jwtUtils;
 
@@ -21,5 +21,6 @@ public class LoginController {
     public ResponseEntity<String> login(@RequestBody @Valid LoginRequest loginRequest){
         return ResponseEntity.ok(jwtUtils.generateToken(loginRequest));
     }
+
 
 }

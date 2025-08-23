@@ -4,7 +4,6 @@ import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import product.service.servicio_login.dto.LoginRequest;
-
 import java.time.Instant;
 import java.util.Date;
 
@@ -31,7 +30,7 @@ public class JwtUtils {
      */
     public String generateToken(LoginRequest user) {
         log.debug("Generando token JWT para el usuario: {}", user.name());
-        log.info("Private key hash: {}", KeyUtils.getPrivateKey().hashCode());
+        log.info("Private key hash: {}", product.service.servicio_login.util.KeyUtils.getPrivateKey().hashCode());
         Instant now = getCurrentInstant();
         Instant expiration = calculateExpiration(now);
         String token = buildJwtToken(user, now, expiration);
@@ -68,14 +67,14 @@ public class JwtUtils {
      */
     private String buildJwtToken(LoginRequest user, Instant issuedAt, Instant expiration) {
         return Jwts.builder()
-                .header()               // 👈 abre el builder del header
-                .add("typ", "JWT")      // 👈 añade el campo "typ"
-                .and()                  // 👈 vuelve al builder del payload
+                .header()
+                .add("typ", "JWT")
+                .and()
                 .subject(user.name())
                 .issuedAt(Date.from(issuedAt))
                 .claim("iss", "ingesis.uniquindio.edu.co")
                 .expiration(Date.from(expiration))
-                .signWith(KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
+                .signWith(product.service.servicio_login.util.KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
                 .compact();
     }
 
