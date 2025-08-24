@@ -1,13 +1,19 @@
-CREATE TABLE usuarios (
-                          id SERIAL PRIMARY KEY,
-                          nombre VARCHAR(100) NOT NULL,
-                          documento VARCHAR(20) UNIQUE NOT NULL,
-                          email VARCHAR(150) UNIQUE NOT NULL,
-                          fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Crear el ENUM para el estado de cuenta
+CREATE TYPE account_status_enum AS ENUM ('CREATED', 'DELETED');
+
+-- Crear tabla en inglés con la nueva columna
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    account_status account_status_enum NOT NULL DEFAULT 'CREATED'
 );
 
 -- Insertar datos de ejemplo
-INSERT INTO usuarios (nombre, documento, email)
+INSERT INTO users (name, email, password, account_status)
 VALUES
-    ('Anderson Peña', '100200300', 'anderson@example.com'),
-    ('Maria Lopez', '200300400', 'maria@example.com');
+    ('Anderson Peña', 'anderson@example.com', 'hashed_password_123', 'CREATED'),
+    ('Maria Lopez', 'maria@example.com', 'hashed_password_456', 'CREATED');

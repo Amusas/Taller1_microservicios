@@ -30,7 +30,7 @@ public class JwtUtils {
      */
     public String generateToken(LoginRequest user) {
         log.debug("Generando token JWT para el usuario: {}", user.name());
-        log.info("Private key hash: {}", KeyUtils.getPrivateKey().hashCode());
+        //log.info("Private key hash: {}", KeyUtils.getPrivateKey().hashCode());
         Instant now = getCurrentInstant();
         Instant expiration = calculateExpiration(now);
         String token = buildJwtToken(user, now, expiration);
@@ -74,7 +74,7 @@ public class JwtUtils {
                 .issuedAt(Date.from(issuedAt))
                 .claim("iss", "ingesis.uniquindio.edu.co")
                 .expiration(Date.from(expiration))
-                .signWith(KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
+                //.signWith(KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
                 .compact();
     }
 

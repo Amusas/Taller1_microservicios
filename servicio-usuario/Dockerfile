@@ -9,5 +9,7 @@ RUN mvn clean package -DskipTests
 FROM amazoncorretto:21
 WORKDIR /app
 COPY --from=builder /app/target/user-service.jar app.jar
+
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
