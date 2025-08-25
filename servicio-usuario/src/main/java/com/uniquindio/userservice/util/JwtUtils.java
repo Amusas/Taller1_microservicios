@@ -1,6 +1,5 @@
 package com.uniquindio.userservice.util;
 
-import com.uniquindio.userservice.dto.LoginRequest;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,16 +24,16 @@ public class JwtUtils {
     /**
      * Genera un token JWT para el usuario proporcionado.
      *
-     * @param user Usuario para el cual se genera el token.
+     * @param email Usuario para el cual se genera el token.
      * @return Token JWT generado.
      */
-    public String generateToken(LoginRequest user) {
-        log.debug("Generando token JWT para el usuario: {}", user.name());
+    public String generateToken(String email) {
+        log.debug("Generando token JWT para el usuario: {}", email);
         //log.info("Private key hash: {}", KeyUtils.getPrivateKey().hashCode());
         Instant now = getCurrentInstant();
         Instant expiration = calculateExpiration(now);
-        String token = buildJwtToken(user, now, expiration);
-        log.info("Token JWT generado para el usuario {} (expira a las {})", user.name(), expiration);
+        String token = buildJwtToken(email, now, expiration);
+        log.info("Token JWT generado para el usuario {} (expira a las {})", email, expiration);
         return token;
     }
 
@@ -65,16 +64,16 @@ public class JwtUtils {
      * @param expiration Instante en el que expira el token.
      * @return Token JWT firmado.
      */
-    private String buildJwtToken(LoginRequest user, Instant issuedAt, Instant expiration) {
+    private String buildJwtToken(String email, Instant issuedAt, Instant expiration) {
         return Jwts.builder()
                 .header()
                 .add("typ", "JWT")
                 .and()
-                .subject(user.name())
+                .subject(email)
                 .issuedAt(Date.from(issuedAt))
                 .claim("iss", "ingesis.uniquindio.edu.co")
                 .expiration(Date.from(expiration))
-                //.signWith(KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
+                .signWith(KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
                 .compact();
     }
 

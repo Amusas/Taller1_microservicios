@@ -199,5 +199,36 @@ public class UserClient {
                 .toBodilessEntity()
                 .block();
     }
+
+
+
+    /**
+     * Obtiene un usuario específico por su identificador único.
+     *
+     * <p>Este método envía una petición GET al endpoint {@code /{id}} del servicio
+     * de usuarios para obtener la información completa de un usuario específico.</p>
+     *
+     * <p><strong>Nota:</strong> Este método es bloqueante (usa {@code .block()}) para
+     * mantener compatibilidad con código síncrono existente.</p>
+     *
+     * @param email único del usuario a consultar
+     * @return {@link UserResponse} con la información del usuario, o {@code null}
+     *         si el usuario no existe o la operación falla
+     * @throws WebClientResponseException si ocurre un error en la comunicación HTTP
+     * @see UserResponse
+     */
+    public UserAuthResponse getUserByEmail(String email) {
+        ApiDBResponse<UserAuthResponse> response = webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/email")
+                        .queryParam("value", email) // aquí pasamos el email como query param
+                        .build())
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<ApiDBResponse<UserAuthResponse>>() {})
+                .block();
+
+        return response != null ? response.data() : null;
+    }
+
 }
 

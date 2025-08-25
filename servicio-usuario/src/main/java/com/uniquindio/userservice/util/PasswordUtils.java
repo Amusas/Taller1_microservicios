@@ -15,5 +15,10 @@ public class PasswordUtils {
         String encryptedPassword = passwordEncoder.encode(user.password());
         return new UserRegistration(user.email(), encryptedPassword, user.name());
     }
+
+    public static boolean matches(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
 }
 

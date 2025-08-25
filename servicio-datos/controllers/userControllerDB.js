@@ -1,6 +1,7 @@
 const UserRegister = require('../models/UserRegister');
 const UserUpdate = require('../models/UserUpdate');
 const UserResponse = require('../models/UserResponse');
+const UserAuthResponse = require('../models/UserAuthResponse');
 const UserRepository = require('../repositories/userRepository');
 const ResponseModel = require('../models/ResponseModel');
 
@@ -204,6 +205,49 @@ class UserControllerDB {
             
             // Crear respuesta exitosa con UserResponse
             const userResponse = UserResponse.fromUser(user);
+            
+            // Usar el modelo de respuesta estandarizado
+            const response = this._createSuccessResponse(
+                'Usuario obtenido exitosamente', 
+                userResponse.toJSON()
+            );
+            
+            return response.send(res);
+
+        } catch (error) {
+            const response = this._handleControllerError(error);
+            response.log('[UserControllerDB]');
+            return response.send(res);
+        }
+    }
+
+
+    /**
+     * GET /api/users/email/{email}
+     * Obtiene un usuario específico por email
+     * @param {Object} req - Request object de Express
+     * @param {Object} res - Response object de Express
+     */
+    async getUserByEmail(req, res) {
+        const userEmail = req.query.value;
+
+        console.log(`🚀 [UserControllerDB] Obteniendo usuario con email: ${userEmail}`);
+        
+        try {
+            
+            // Obtener usuario del repositorio
+            const user = await this.userRepository.findByEmail(userEmail);
+            
+            if (!user) {
+                const response = ResponseModel.notFound('Usuario no encontrado');
+                response.log('[UserControllerDB]');
+                return response.send(res);
+            }
+
+            console.log(`✅ [UserControllerDB] Usuario obtenido exitosamente con email: ${userEmail}`);
+            
+            // Crear respuesta exitosa con UserAuthResponse (incluye password para autenticación)
+            const userResponse = UserAuthResponse.fromUser(user);
             
             // Usar el modelo de respuesta estandarizado
             const response = this._createSuccessResponse(

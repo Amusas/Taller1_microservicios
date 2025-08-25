@@ -149,6 +149,7 @@ class UserRepository {
         }
     }
 
+    
     // READ - Obtener usuario por email
     async findByEmail(email) {
         try {
@@ -190,6 +191,7 @@ class UserRepository {
         }
     }
 
+
     /**
      * Valida parámetros de paginación y calcula offset
      * @param {number} page - Página solicitada
@@ -203,6 +205,7 @@ class UserRepository {
         
         return { validatedPage, validatedSize, offset };
     }
+
 
     /**
      * Obtiene datos paginados de la base de datos
@@ -266,6 +269,7 @@ class UserRepository {
         
         return { updateFields, values, paramCount };
     }
+
 
     /**
      * UPDATE - Actualizar usuario

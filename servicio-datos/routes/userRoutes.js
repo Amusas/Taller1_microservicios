@@ -29,6 +29,13 @@ router.put('/:id', userController.updateUser.bind(userController));
 router.get('/', userController.getAllUsersPaginated.bind(userController));
 
 /**
+ * @route   GET /api/users/email
+ * @desc    Obtener un usuario específico por email
+ * @access  Public
+ */
+router.get('/email', (req, res) => userController.getUserByEmail(req, res));
+
+/**
  * @route   GET /api/users/:id
  * @desc    Obtener un usuario específico por ID
  * @access  Public

@@ -18,7 +18,7 @@ public record UserRegistration(
                 message = "La contraseña debe contener al menos un dígito, una mayúscula y una minúscula")
         String password,
 
-        @Size(min = 8, max = 50, message = "La contraseña debe contener entre 8 y 50 carácteres")
+        @Size(min = 8, max = 50, message = "El nombre debe contener entre 8 y 50 carácteres")
         @NotBlank(message = "El nombre es obligatorio")
         String name
 ) {}

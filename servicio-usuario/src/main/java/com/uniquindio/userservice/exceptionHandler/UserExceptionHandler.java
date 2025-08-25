@@ -2,10 +2,7 @@ package com.uniquindio.userservice.exceptionHandler;
 
 import com.uniquindio.userservice.dto.ErrorResponse;
 import com.uniquindio.userservice.dto.ValidationErrorResponse;
-import com.uniquindio.userservice.exception.DuplicateEmailException;
-import com.uniquindio.userservice.exception.ExternalServiceException;
-import com.uniquindio.userservice.exception.InvalidIdException;
-import com.uniquindio.userservice.exception.UserNotFoundException;
+import com.uniquindio.userservice.exception.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -86,6 +83,17 @@ public class UserExceptionHandler {
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
+
+
+    @ExceptionHandler(IncorrectPasswordException.class)
+    public ResponseEntity<ErrorResponse> handleIncorrectPassword(IncorrectPasswordException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage(),  // mensaje que vino desde la API externa
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
 }
