@@ -1,4 +1,4 @@
-package com.uniquindio.userservice.exception;
+package com.uniquindio.userservice.exception.userException;
 
 public class UserNotFoundException extends RuntimeException {
 

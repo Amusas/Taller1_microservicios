@@ -4,4 +4,6 @@ import com.uniquindio.userservice.dto.LoginRequest;
 
 public interface AuthService {
     String login(LoginRequest loginRequest);
+
+    void sendPasswordResetCode(String email);
 }

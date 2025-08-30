@@ -1,5 +1,6 @@
 package com.uniquindio.userservice.controller;
 
+import com.uniquindio.userservice.annotation.IsOwner;
 import com.uniquindio.userservice.dto.PaginatedUserResponse;
 import com.uniquindio.userservice.dto.UserRegistration;
 import com.uniquindio.userservice.dto.UserResponse;

@@ -3,9 +3,9 @@ package com.uniquindio.userservice.service.impl;
 import com.uniquindio.userservice.client.UserClient;
 import com.uniquindio.userservice.dto.LoginRequest;
 import com.uniquindio.userservice.dto.UserAuthResponse;
-import com.uniquindio.userservice.exception.ExternalServiceException;
-import com.uniquindio.userservice.exception.IncorrectPasswordException;
-import com.uniquindio.userservice.exception.UserNotFoundException;
+import com.uniquindio.userservice.exception.userException.ExternalServiceException;
+import com.uniquindio.userservice.exception.userException.IncorrectPasswordException;
+import com.uniquindio.userservice.exception.userException.UserNotFoundException;
 import com.uniquindio.userservice.service.interfaces.AuthService;
 import com.uniquindio.userservice.util.JwtUtils;
 import com.uniquindio.userservice.util.PasswordUtils;
@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // Generar token JWT
-            String token = jwtUtils.generateToken(user.email());
+            String token = jwtUtils.generateToken(user);
             log.info("Token JWT generado exitosamente para el usuario {}", loginRequest.email());
 
             return token;
@@ -55,5 +55,11 @@ public class AuthServiceImpl implements AuthService {
             }
         }
     }
+
+    @Override
+    public void sendPasswordResetCode(String email) {
+
+    }
+
 
 }
