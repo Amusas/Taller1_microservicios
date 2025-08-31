@@ -8,5 +8,4 @@ public interface AuthService {
     OtpResponse requestOtp(OtpRequest otpRequest);
 
     boolean updatePassword(PasswordRecoveryRequest passwordRecoveryRequest);
-
 }

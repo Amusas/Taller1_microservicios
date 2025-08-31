@@ -1,5 +1,7 @@
 package com.uniquindio.userservice.util;
 
+import com.uniquindio.userservice.dto.UserAuthResponse;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -24,16 +26,16 @@ public class JwtUtils {
     /**
      * Genera un token JWT para el usuario proporcionado.
      *
-     * @param email Usuario para el cual se genera el token.
+     * @param user Usuario para el cual se genera el token.
      * @return Token JWT generado.
      */
-    public String generateToken(String email) {
-        log.debug("Generando token JWT para el usuario: {}", email);
+    public String generateToken(UserAuthResponse user) {
+        log.debug("Generando token JWT para el usuario: {}", user.email());
         //log.info("Private key hash: {}", KeyUtils.getPrivateKey().hashCode());
         Instant now = getCurrentInstant();
         Instant expiration = calculateExpiration(now);
-        String token = buildJwtToken(email, now, expiration);
-        log.info("Token JWT generado para el usuario {} (expira a las {})", email, expiration);
+        String token = buildJwtToken(user, now, expiration);
+        log.info("Token JWT generado para el usuario {} (expira a las {})", user.email(), expiration);
         return token;
     }
 
@@ -60,21 +62,47 @@ public class JwtUtils {
     /**
      * Construye y firma el token JWT utilizando los datos proporcionados, el instante de emisión y expiración.
      *
-     * @param issuedAt  Instante en el que se emite el token.
+     * @param user       Usuario autenticado (contiene id y email).
+     * @param issuedAt   Instante en el que se emite el token.
      * @param expiration Instante en el que expira el token.
      * @return Token JWT firmado.
      */
-    private String buildJwtToken(String email, Instant issuedAt, Instant expiration) {
+    private String buildJwtToken(UserAuthResponse user, Instant issuedAt, Instant expiration) {
         return Jwts.builder()
                 .header()
                 .add("typ", "JWT")
                 .and()
-                .subject(email)
-                .issuedAt(Date.from(issuedAt))
-                .claim("iss", "ingesis.uniquindio.edu.co")
-                .expiration(Date.from(expiration))
+                .id(String.valueOf(user.id()))                // claim estándar: jti
+                .subject(user.email())                        // claim estándar: sub
+                .issuedAt(Date.from(issuedAt))                // claim estándar: iat
+                .claim("iss", "ingesis.uniquindio.edu.co")    // claim estándar: iss
+                .claim("userId", user.id())                   // claim personalizado
+                .expiration(Date.from(expiration))            // claim estándar: exp
                 .signWith(KeyUtils.getPrivateKey(), Jwts.SIG.RS256)
                 .compact();
+    }
+
+
+    public Claims validateToken(String token) {
+        return Jwts.parser()
+                .verifyWith(KeyUtils.getPublicKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    /**
+     * Extrae todos los claims de un token JWT firmado con RSA.
+     *
+     * @param token JWT a parsear.
+     * @return Claims con toda la información (sub, exp, iat, custom claims como userId).
+     */
+    public Claims getClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(KeyUtils.getPublicKey())  // Usa la clave pública para verificar
+                .build()
+                .parseSignedClaims(token)             // Valida firma y expiración
+                .getPayload();                        // Devuelve los claims
     }
 
 

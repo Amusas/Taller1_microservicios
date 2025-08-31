@@ -2,7 +2,8 @@ package com.uniquindio.userservice.exceptionHandler;
 
 import com.uniquindio.userservice.dto.ErrorResponse;
 import com.uniquindio.userservice.dto.ValidationErrorResponse;
-import com.uniquindio.userservice.exception.*;
+import com.uniquindio.userservice.exception.authException.UnauthorizedOwnerAccessException;
+import com.uniquindio.userservice.exception.userException.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +45,7 @@ public class UserExceptionHandler {
                 .body(errors);
     }
 
+
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateEmail(DuplicateEmailException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -54,6 +56,7 @@ public class UserExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
 
+
     @ExceptionHandler(InvalidIdException.class)
     public ResponseEntity<ErrorResponse> handleInvalidId(InvalidIdException ex) {
         ErrorResponse error = new ErrorResponse(
@@ -63,6 +66,7 @@ public class UserExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
@@ -95,5 +99,17 @@ public class UserExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
+
+
+    @ExceptionHandler(UnauthorizedOwnerAccessException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedOwnerAccess(UnauthorizedOwnerAccessException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.FORBIDDEN.value(), // 403 Forbidden
+                ex.getMessage(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+    }
+
 
 }

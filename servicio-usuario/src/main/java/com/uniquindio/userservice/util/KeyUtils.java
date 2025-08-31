@@ -35,12 +35,16 @@ public class KeyUtils {
             String pubPath = System.getenv("PUBLIC_KEY_PATH");
             String privPath = System.getenv("PRIVATE_KEY_PATH");
 
+// Si no están en el contenedor, usar rutas locales
             if (pubPath == null || privPath == null) {
-                throw new IllegalStateException("❌ Las variables PUBLIC_KEY_PATH y PRIVATE_KEY_PATH deben estar definidas");
+                pubPath = "/home/andrew/Taller1_Microservicios/keys/public-key.pem";
+                privPath = "/home/andrew/Taller1_Microservicios/keys/private-key.pem";
+                System.out.println("⚠️ Variables no encontradas, usando rutas locales: " + pubPath + " y " + privPath);
             }
 
             Path publicKeyPath = Paths.get(pubPath);
             Path privateKeyPath = Paths.get(privPath);
+
 
             byte[] publicKeyBytes = Files.readAllBytes(publicKeyPath);
             byte[] privateKeyBytes = Files.readAllBytes(privateKeyPath);

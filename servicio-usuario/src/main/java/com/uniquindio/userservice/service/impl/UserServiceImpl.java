@@ -1,11 +1,12 @@
 package com.uniquindio.userservice.service.impl;
 
+import com.uniquindio.userservice.annotation.IsOwner;
 import com.uniquindio.userservice.client.UserClient;
 import com.uniquindio.userservice.dto.*;
-import com.uniquindio.userservice.exception.DuplicateEmailException;
-import com.uniquindio.userservice.exception.ExternalServiceException;
-import com.uniquindio.userservice.exception.InvalidIdException;
-import com.uniquindio.userservice.exception.UserNotFoundException;
+import com.uniquindio.userservice.exception.userException.DuplicateEmailException;
+import com.uniquindio.userservice.exception.userException.ExternalServiceException;
+import com.uniquindio.userservice.exception.userException.InvalidIdException;
+import com.uniquindio.userservice.exception.userException.UserNotFoundException;
 import com.uniquindio.userservice.service.interfaces.UserService;
 import com.uniquindio.userservice.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
@@ -241,6 +242,7 @@ public class UserServiceImpl implements UserService {
      * @see #validateUserId(int)
      */
     @Override
+    @IsOwner
     public UserResponse updateUser(int id, UserUpdateRequest userUpdateRequest) {
         validateUserId(id);
         try {
@@ -298,6 +300,7 @@ public class UserServiceImpl implements UserService {
      * @see #validateUserId(int)
      */
     @Override
+    @IsOwner
     public void deleteUser(int userId) {
         validateUserId(userId);
         try {
