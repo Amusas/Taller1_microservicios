@@ -11,9 +11,21 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     account_status account_status_enum NOT NULL DEFAULT 'CREATED'
 );
-
+/*
 -- Insertar datos de ejemplo
 INSERT INTO users (name, email, password, account_status)
 VALUES
     ('Anderson Peña', 'anderson@example.com', 'hashed_password_123', 'CREATED'),
     ('Maria Lopez', 'maria@example.com', 'hashed_password_456', 'CREATED');
+*/
+
+CREATE TYPE otp_status_enum AS ENUM ('CREATED', 'VERIFIED', 'EXPIRED');
+
+CREATE TABLE otp (
+    id SERIAL PRIMARY KEY,
+    otp SMALLINT NOT NULL,
+    user_id INT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    otp_status otp_status_enum NOT NULL DEFAULT 'CREATED',
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id)
+);
