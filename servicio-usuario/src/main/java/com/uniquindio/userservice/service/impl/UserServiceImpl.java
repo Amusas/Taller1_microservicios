@@ -1,10 +1,7 @@
 package com.uniquindio.userservice.service.impl;
 
 import com.uniquindio.userservice.client.UserClient;
-import com.uniquindio.userservice.dto.PaginatedUserResponse;
-import com.uniquindio.userservice.dto.UserRegistration;
-import com.uniquindio.userservice.dto.UserResponse;
-import com.uniquindio.userservice.dto.UserUpdateRequest;
+import com.uniquindio.userservice.dto.*;
 import com.uniquindio.userservice.exception.DuplicateEmailException;
 import com.uniquindio.userservice.exception.ExternalServiceException;
 import com.uniquindio.userservice.exception.InvalidIdException;
@@ -67,19 +64,19 @@ public class UserServiceImpl implements UserService {
      * incluyendo la encriptación automática de la contraseña antes de enviarla al
      * servicio externo. El proceso incluye validaciones y manejo robusto de errores.</p>
      * 
-      * <p><strong>Flujo de la operación:</strong></p>
- * <ol>
- *   <li>Encriptación de la contraseña del usuario usando {@link PasswordUtils}</li>
- *   <li>Intento de registro en el servicio externo mediante {@link UserClient}</li>
- *   <li>Manejo de respuestas exitosas y errores HTTP</li>
- *   <li>Traducción de códigos de error a excepciones específicas del dominio</li>
- * </ol>
-     * 
-      * <p><strong>Manejo de errores:</strong></p>
- * <ul>
- *   <li><strong>409 (Conflict):</strong> Se lanza {@link DuplicateEmailException} si el email ya existe</li>
- *   <li><strong>Otros códigos:</strong> Se lanza {@link ExternalServiceException} con detalles del error</li>
- * </ul>
+     * <p><strong>Flujo de la operación:</strong></p>
+     * <ol>
+     *   <li>Encriptación de la contraseña del usuario usando {@link PasswordUtils}</li>
+     *   <li>Intento de registro en el servicio externo mediante {@link UserClient}</li>
+     *   <li>Manejo de respuestas exitosas y errores HTTP</li>
+     *   <li>Traducción de códigos de error a excepciones específicas del dominio</li>
+     * </ol>
+     *
+     * <p><strong>Manejo de errores:</strong></p>
+     * <ul>
+     *   <li><strong>409 (Conflict):</strong> Se lanza {@link DuplicateEmailException} si el email ya existe</li>
+     *   <li><strong>Otros códigos:</strong> Se lanza {@link ExternalServiceException} con detalles del error</li>
+     * </ul>
      * 
      * <p><strong>Seguridad:</strong> La contraseña se encripta antes de ser enviada
      * al servicio externo para proteger la información sensible del usuario.</p>
@@ -349,4 +346,5 @@ public class UserServiceImpl implements UserService {
             throw new InvalidIdException("El ID proporcionado no es válido: " + userId);
         }
     }
+
 }
