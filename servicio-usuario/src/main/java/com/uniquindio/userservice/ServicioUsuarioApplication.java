@@ -6,10 +6,10 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @SpringBootApplication
 @EnableAspectJAutoProxy(proxyTargetClass = true) //Activar anotaciones personalizadas
-public class ServicioLoginApplication {
+public class ServicioUsuarioApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ServicioLoginApplication.class, args);
+        SpringApplication.run(ServicioUsuarioApplication.class, args);
     }
 
 }

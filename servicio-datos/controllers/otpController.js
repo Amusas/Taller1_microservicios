@@ -1,4 +1,4 @@
-const OtpRepository = require('../repositories/OtpRepository');
+const OtpRepository = require('../repositories/otpRepository');
 const ResponseModel = require('../models/ResponseModel');
 
 class OtpController {
@@ -50,11 +50,11 @@ class OtpController {
         console.log('🚀 [OtpController] Creando OTP...');
 
         try {
-            const { user_id } = req.body;
+            const { email } = req.body;
 
             // Validar que el ID de usuario exista
-            if (!user_id) {
-                const response = ResponseModel.badRequest('El ID de usuario es obligatorio');
+            if (!email) {
+                const response = ResponseModel.badRequest('El email del usuario es obligatorio');
                 response.log('[OtpController]');
                 return response.send(res);
             }
@@ -63,7 +63,7 @@ class OtpController {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
             // Intentar crear el OTP en la base de datos
-            const createdOtp = await this.otpRepository.create({ otp, user_id });
+            const createdOtp = await this.otpRepository.create({ otp, email });
 
             // Crear respuesta exitosa
             const response = this._createSuccessResponse(
@@ -72,7 +72,7 @@ class OtpController {
                 201
             );
 
-            console.log(`✅ [OtpController] OTP creado para usuario: ${user_id}`);
+            console.log(`✅ [OtpController] OTP creado para usuario: ${email}`);
             return response.send(res);
 
         } catch (error) {
@@ -92,25 +92,25 @@ class OtpController {
         console.log('🚀 [OtpController] Verificando OTP...');
 
         try {
-            const { otp, user_id } = req.body;
+            const { otp, email } = req.body;
 
             // Validar que los datos existan
-            if (!otp || !user_id) {
+            if (!otp || !email) {
                 const response = ResponseModel.badRequest('El OTP y el ID de usuario son obligatorios');
                 response.log('[OtpController]');
                 return response.send(res);
             }
 
             // Intentar verificar el OTP
-            const isVerified = await this.otpRepository.verify(user_id, otp);
+            const isVerified = await this.otpRepository.verify(email, otp);
 
             if (isVerified) {
                 const response = this._createSuccessResponse('OTP verificado exitosamente');
-                console.log(`✅ [OtpController] OTP verificado para usuario: ${user_id}`);
+                console.log(`✅ [OtpController] OTP verificado para usuario: ${email}`);
                 return response.send(res);
             } else {
                 const response = ResponseModel.badRequest('El OTP es inválido o ha expirado');
-                console.log(`🚫 [OtpController] Fallo en la verificación del OTP para usuario: ${user_id}`);
+                console.log(`🚫 [OtpController] Fallo en la verificación del OTP para usuario: ${email}`);
                 return response.send(res);
             }
 
