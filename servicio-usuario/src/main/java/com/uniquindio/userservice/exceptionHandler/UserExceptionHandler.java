@@ -2,6 +2,7 @@ package com.uniquindio.userservice.exceptionHandler;
 
 import com.uniquindio.userservice.dto.ErrorResponse;
 import com.uniquindio.userservice.dto.ValidationErrorResponse;
+import com.uniquindio.userservice.exception.OtpCreationException;
 import com.uniquindio.userservice.exception.authException.UnauthorizedOwnerAccessException;
 import com.uniquindio.userservice.exception.userException.*;
 import lombok.extern.slf4j.Slf4j;
@@ -111,5 +112,15 @@ public class UserExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+
+    @ExceptionHandler(OtpCreationException.class)
+    public ResponseEntity<ErrorResponse> handleOtpCreationException(OtpCreationException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), // 400 Bad Request
+                "El usuario ya tiene un otp activo",
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 
 }

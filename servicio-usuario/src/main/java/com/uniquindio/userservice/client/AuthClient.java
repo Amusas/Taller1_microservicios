@@ -30,16 +30,17 @@ public class AuthClient {
         return response != null ? response.data() : null;
     }
 
-    public Boolean recoverPassword(PasswordRecoveryRequest recoveryRequest) {
-        ApiDBResponse<Boolean> response = webClient.post()
+
+    public void recoverPassword(PasswordRecoveryRequest recoveryRequest) {
+        webClient.post()
                 .uri("/otp/verify")
                 .bodyValue(recoveryRequest)
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<ApiDBResponse<Boolean>>() {})
+                .toBodilessEntity()
                 .block();
-
-        return response != null ? response.data() : null;
     }
+
+
 }
 
 
