@@ -248,27 +248,34 @@ class UserRepository {
         const updateFields = [];
         const values = [];
         let paramCount = 0;
-        
-        // Agregar campos a actualizar
+
+        // Agregar campos a actualizar dinámicamente
         if (updateData.name !== undefined) {
             paramCount++;
             updateFields.push(`name = $${paramCount}`);
             values.push(updateData.name);
         }
-        
+
         if (updateData.email !== undefined) {
             paramCount++;
             updateFields.push(`email = $${paramCount}`);
             values.push(updateData.email);
         }
-        
+
+        if (updateData.password !== undefined) {
+            paramCount++;
+            updateFields.push(`password = $${paramCount}`);
+            values.push(updateData.password);
+        }
+
         // Si no hay campos para actualizar, lanzar error
         if (updateFields.length === 0) {
             throw new Error('No hay campos válidos para actualizar');
         }
-        
+
         return { updateFields, values, paramCount };
     }
+
 
 
     /**
@@ -333,7 +340,55 @@ class UserRepository {
         }
     }
 
-    
+
+
+    /**
+     * UPDATE - Actualizar contraseña del usuario
+     * @param {number} id - ID del usuario a actualizar
+     * @param {string} password - Contraseña a actualizar
+     * @returns {Promise<Boolean>} Usuario actualizado (sin información sensible)
+     * @throws {Error} Si hay un error en la base de datos
+     * @throws {Error} Si el usuario no existe (código 404)
+     */
+    async updatePassword(id, password) {
+        console.log(`🔍 [UserRepository] Intento de actualizar contraseña del usuario con ID: ${id}`);
+
+        try {
+            // Primero verificar si el usuario existe
+            const existingUser = await this.findById(id);
+            if (!existingUser) {
+                return false;
+            }
+
+            // Construir query de actualización
+            const { updateFields, values, paramCount } = this._buildUpdateQuery({ password });
+
+            // Agregar campo updated_at fijo y el id al final
+            const query = `
+            UPDATE users
+            SET ${updateFields}, updated_at = CURRENT_TIMESTAMP
+            WHERE id = $${paramCount + 1} AND account_status != 'DELETED'
+            RETURNING *
+        `;
+
+            values.push(id);
+
+            const updatedUser = await this._executeQueryAndReturnUser(query, values);
+
+            if (!updatedUser) {
+                console.log(`❌ [UserRepository] Usuario no encontrado o ya eliminado: ${id}`);
+                return false;
+            }
+
+            console.log(`✅ [UserRepository] Contraseña actualizada para el usuario con ID: ${updatedUser.id}`);
+            return true
+
+        } catch (error) {
+            console.error(`❌ [UserRepository] Error actualizando usuario: ${error.message}`);
+            throw this._handleDatabaseError(error, 'actualizando');
+        }
+    }
+
     // DELETE - Eliminación lógica (cambia account_status a DELETED)
     async delete(id) {
         try {

@@ -19,6 +19,6 @@ router.post('/otp', otpController.createOtp.bind(otpController));
  * @desc    Verificar un OTP
  * @access  Public
  */
-router.post('/otp/verify', otpController.verifyOtp.bind(otpController));
+router.post('/otp/recover-password', otpController.recoverPassword.bind(otpController));
 
 module.exports = router;

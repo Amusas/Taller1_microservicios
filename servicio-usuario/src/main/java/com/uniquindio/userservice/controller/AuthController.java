@@ -85,10 +85,10 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
     @PostMapping("/password-recovery")
-    public ResponseEntity<Boolean> recoverPassword(@RequestBody @Valid PasswordRecoveryRequest request) {
+    public ResponseEntity<String> recoverPassword(@RequestBody @Valid PasswordRecoveryRequest request) {
         log.info("🔑 Recuperación de contraseña solicitada para: {}", request.email());
         Boolean response = authService.updatePassword(request);
         log.info("✅ Contraseña actualizada para: {}", request.email());
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok("Contraseña reestablecida para el usuario");
     }
 }
