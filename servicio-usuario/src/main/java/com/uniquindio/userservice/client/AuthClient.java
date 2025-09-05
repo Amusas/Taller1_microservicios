@@ -33,7 +33,7 @@ public class AuthClient {
 
     public void recoverPassword(PasswordRecoveryRequest recoveryRequest) {
         webClient.post()
-                .uri("/otp/verify")
+                .uri("/otp/recover-password")
                 .bodyValue(recoveryRequest)
                 .retrieve()
                 .toBodilessEntity()

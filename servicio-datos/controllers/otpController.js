@@ -1,10 +1,12 @@
 const OtpRepository = require('../repositories/otpRepository');
 const ResponseModel = require('../models/ResponseModel');
+const UserRepository = require("../repositories/userRepository");
 
 class OtpController {
 
     constructor() {
         this.otpRepository = new OtpRepository();
+        this.userRepository = new UserRepository();
     }
 
     /**
@@ -83,20 +85,20 @@ class OtpController {
     }
 
     /**
-     * POST /api/otp/verify
-     * Verifica un OTP para un usuario
+     * POST /api/otp/recover-password
+     * Verifica un OTP para un usuario y reestablece su contraseña
      * @param {Object} req - Request object de Express
      * @param {Object} res - Response object de Express
      */
-    async verifyOtp(req, res) {
+    async recoverPassword(req, res) {
         console.log('🚀 [OtpController] Verificando OTP...');
 
         try {
-            const { otp, email } = req.body;
+            const { otp, email, password } = req.body;
 
             // Validar que los datos existan
-            if (!otp || !email) {
-                const response = ResponseModel.badRequest('El OTP y el ID de usuario son obligatorios');
+            if (!otp || !email || !password) {
+                const response = ResponseModel.badRequest('El OTP, el ID de usuario y su contraseña son obligatorios');
                 response.log('[OtpController]');
                 return response.send(res);
             }
@@ -104,15 +106,19 @@ class OtpController {
             // Intentar verificar el OTP
             const isVerified = await this.otpRepository.verify(email, otp);
 
-            if (isVerified) {
-                const response = this._createSuccessResponse('OTP verificado exitosamente');
-                console.log(`✅ [OtpController] OTP verificado para usuario: ${email}`);
-                return response.send(res);
-            } else {
+            if (!isVerified) {
                 const response = ResponseModel.badRequest('El OTP es inválido o ha expirado');
                 console.log(`🚫 [OtpController] Fallo en la verificación del OTP para usuario: ${email}`);
                 return response.send(res);
             }
+
+            const user  = await this.userRepository.findByEmail(email);
+            const isUpdated = await this.userRepository.updatePassword(user.id, password)
+
+            const response = this._createSuccessResponse('OTP verificado exitosamente');
+            console.log(`✅ [OtpController] OTP verificado para usuario: ${email}`);
+            console.log('Reestableciendo contraseña...')
+
 
         } catch (error) {
             const response = this._handleControllerError(error);

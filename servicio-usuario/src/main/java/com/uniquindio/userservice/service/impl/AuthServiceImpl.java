@@ -159,7 +159,10 @@ public class AuthServiceImpl implements AuthService {
             log.info("Intentando encontrar el usuario con email: {}", email);
 
             log.info("Intentando cambiar la contraseña para el usuario con email: {}, usando el OTP: {}", email, otp);
-            authClient.recoverPassword(passwordRecoveryRequest);
+            PasswordRecoveryRequest pr = PasswordUtils.encryptPassword(passwordRecoveryRequest);
+
+            authClient.recoverPassword(pr);
+
             return true;
 
         } catch (WebClientResponseException e) {
