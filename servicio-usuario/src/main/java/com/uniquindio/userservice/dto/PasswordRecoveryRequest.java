@@ -34,7 +34,7 @@ public record PasswordRecoveryRequest(
         @NotNull(message = "El OTP es obligatorio")
         @Min(value = 100000, message = "El OTP debe tener al menos 6 dígitos")
         @Max(value = 999999, message = "El OTP debe tener como máximo 6 dígitos")
-        int otp,
+        String otp,
 
         @Schema(
                 description = "Nueva contraseña que debe cumplir las reglas de seguridad",
