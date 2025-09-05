@@ -18,20 +18,10 @@ public class AuthClient {
         this.webClient = builder.baseUrl(baseUrl).build();
     }
 
-    public String login(LoginRequest loginRequest) {
-        ApiDBResponse<String> response = webClient.post()
-                .uri("/login")
-                .bodyValue(loginRequest)
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<ApiDBResponse<String>>() {})
-                .block();
-
-        return response != null ? response.data() : null;
-    }
 
     public OtpResponse requestOtp(OtpRequest request) {
         ApiDBResponse<OtpResponse> response = webClient.post()
-                .uri("/otp-generator")
+                .uri("/otp")
                 .bodyValue(request)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<ApiDBResponse<OtpResponse>>() {})
@@ -40,16 +30,17 @@ public class AuthClient {
         return response != null ? response.data() : null;
     }
 
-    public Boolean recoverPassword(PasswordRecoveryRequest recoveryRequest) {
-        ApiDBResponse<Boolean> response = webClient.post()
-                .uri("/password-recovery")
+
+    public void recoverPassword(PasswordRecoveryRequest recoveryRequest) {
+        webClient.post()
+                .uri("/otp/verify")
                 .bodyValue(recoveryRequest)
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<ApiDBResponse<Boolean>>() {})
+                .toBodilessEntity()
                 .block();
-
-        return response != null ? response.data() : null;
     }
+
+
 }
 
 

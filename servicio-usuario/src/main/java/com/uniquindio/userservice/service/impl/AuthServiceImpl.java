@@ -2,7 +2,6 @@ package com.uniquindio.userservice.service.impl;
 
 import com.uniquindio.userservice.client.AuthClient;
 import com.uniquindio.userservice.client.UserClient;
-import com.uniquindio.userservice.client.UserClient;
 import com.uniquindio.userservice.dto.*;
 import com.uniquindio.userservice.exception.userException.ExternalServiceException;
 import com.uniquindio.userservice.exception.userException.IncorrectPasswordException;
@@ -155,13 +154,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean updatePassword(PasswordRecoveryRequest passwordRecoveryRequest) {
         String email = passwordRecoveryRequest.email();
-        int otp = passwordRecoveryRequest.otp();
+        String otp = passwordRecoveryRequest.otp();
         try {
             log.info("Intentando encontrar el usuario con email: {}", email);
-            UserAuthResponse user = userClient.getUserByEmail(email);
 
             log.info("Intentando cambiar la contraseña para el usuario con email: {}, usando el OTP: {}", email, otp);
-            return authClient.recoverPassword(passwordRecoveryRequest);
+            authClient.recoverPassword(passwordRecoveryRequest);
+            return true;
 
         } catch (WebClientResponseException e) {
             log.error("Error al generar el otp. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());

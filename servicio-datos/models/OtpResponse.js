@@ -17,6 +17,11 @@ class OtpResponse {
             otp_status: this.otp_status
         };
     }
+
+    //
+    static fromOtp(otp) {
+        return new OtpResponse(otp);
+    }
 }
 
 module.exports = OtpResponse;

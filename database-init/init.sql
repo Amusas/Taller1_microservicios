@@ -23,7 +23,7 @@ CREATE TYPE otp_status_enum AS ENUM ('CREATED', 'VERIFIED', 'EXPIRED');
 
 CREATE TABLE otp (
     id SERIAL PRIMARY KEY,
-    otp SMALLINT NOT NULL,
+    otp INT NOT NULL,
     user_id INT NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     otp_status otp_status_enum NOT NULL DEFAULT 'CREATED',

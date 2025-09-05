@@ -29,7 +29,7 @@ services:
       - PUBLIC_KEY_PATH=/app/keys/public-key.pem
       - PRIVATE_KEY_PATH=/app/keys/private-key.pem      # URL del data-service para comunicación entre microservicios
       - DATA_SERVICE_URL=http://data-service:8082/api/users
-      - DATA_SERVICE_URL=http://data-service:8082/api/otp
+      - AUTH_SERVICE_URL=http://data-service:8082/api/auth
     volumes:
       - ./keys:/app/keys:ro
     ports:
