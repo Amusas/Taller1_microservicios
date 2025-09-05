@@ -2,6 +2,12 @@ package com.uniquindio.userservice.controller;
 
 import com.uniquindio.userservice.dto.*;
 import com.uniquindio.userservice.service.interfaces.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,16 +16,12 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * Controlador REST para la autenticación y gestión de credenciales.
- *
- * Endpoints:
- * - POST /api/v1/auth/login              : Inicio de sesión (retorna JWT)
- * - POST /api/v1/auth/otp-generator      : Solicita/genera OTP para un email
- * - POST /api/v1/auth/password-recovery  : Valida OTP y cambia la contraseña
  */
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 @Slf4j
+@Tag(name = "Autenticación", description = "Endpoints para login, OTP y recuperación de contraseña")
 public class AuthController {
 
     private final AuthService authService;
@@ -27,6 +29,17 @@ public class AuthController {
     /**
      * Inicia sesión y retorna el JWT.
      */
+    @Operation(
+            summary = "Iniciar sesión",
+            description = "Permite autenticar un usuario con email y contraseña. Devuelve un token JWT si las credenciales son correctas."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login exitoso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(example = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "401", description = "Credenciales incorrectas")
+    })
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody @Valid LoginRequest loginRequest) {
         log.info("🔐 Login solicitado para: {}", loginRequest.email());
@@ -38,6 +51,17 @@ public class AuthController {
     /**
      * Genera/solicita un OTP para el email indicado.
      */
+    @Operation(
+            summary = "Generar OTP",
+            description = "Genera un código de un solo uso (OTP) y lo envía al correo del usuario."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OTP generado exitosamente",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OtpResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
     @PostMapping("/otp-generator")
     public ResponseEntity<OtpResponse> requestOtp(@RequestBody @Valid OtpRequest request) {
         log.info("📩 Solicitud de OTP para: {}", request.email());
@@ -47,8 +71,19 @@ public class AuthController {
     }
 
     /**
-     * Valida el OTP y actualiza la contraseña.
+     * Válida el OTP y actualiza la contraseña.
      */
+    @Operation(
+            summary = "Recuperar contraseña",
+            description = "Valida el código OTP enviado al correo y permite restablecer la contraseña del usuario."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada correctamente",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(example = "true"))),
+            @ApiResponse(responseCode = "400", description = "OTP inválido o expirado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
     @PostMapping("/password-recovery")
     public ResponseEntity<Boolean> recoverPassword(@RequestBody @Valid PasswordRecoveryRequest request) {
         log.info("🔑 Recuperación de contraseña solicitada para: {}", request.email());

@@ -1,4 +1,4 @@
-const OtpRepository = require('../repositories/OtpRepository');
+const OtpRepository = require('../repositories/otpRepository');
 const ResponseModel = require('../models/ResponseModel');
 
 class OtpController {
