@@ -87,7 +87,7 @@ public class AuthController {
     @PostMapping("/password-recovery")
     public ResponseEntity<String> recoverPassword(@RequestBody @Valid PasswordRecoveryRequest request) {
         log.info("🔑 Recuperación de contraseña solicitada para: {}", request.email());
-        Boolean response = authService.updatePassword(request);
+        authService.updatePassword(request);
         log.info("✅ Contraseña actualizada para: {}", request.email());
         return ResponseEntity.ok("Contraseña reestablecida para el usuario");
     }
