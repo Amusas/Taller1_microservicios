@@ -91,7 +91,7 @@ class OtpController {
      * @param {Object} res - Response object de Express
      */
     async recoverPassword(req, res) {
-        console.log('🚀 [OtpController] Verificando OTP...');
+        console.log('🚀 [OtpController] Verificando OTP y reestableciendo contraseña...');
 
         try {
             const { otp, email, password } = req.body;
@@ -112,13 +112,22 @@ class OtpController {
                 return response.send(res);
             }
 
+            console.log(`✅ [OtpController] OTP verificado para usuario: ${email}`);
+
+            console.log(`🚀 [OtpController] Reestableciendo contraseña para el usuario: ${email}`);
+
             const user  = await this.userRepository.findByEmail(email);
             const isUpdated = await this.userRepository.updatePassword(user.id, password)
 
-            const response = this._createSuccessResponse('OTP verificado exitosamente');
-            console.log(`✅ [OtpController] OTP verificado para usuario: ${email}`);
-            console.log('Reestableciendo contraseña...')
+            if (!isUpdated) {
+                const response = ResponseModel.badRequest('Error al actualizar la contraseña');
+                console.log(`🚫 [OtpController] Fallo en la actualizacion de contraseña para usuario: ${email}`);
+                return response.send(res);
+            }
 
+            const response = this._createSuccessResponse('Contaseña reestablecida exitosamente');
+            console.log(`✅ [OtpController] Contraseña reestablecida para usuario: ${email}`);
+            return response.send(res);
 
         } catch (error) {
             const response = this._handleControllerError(error);

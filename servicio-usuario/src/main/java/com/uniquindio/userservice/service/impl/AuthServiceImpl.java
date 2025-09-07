@@ -3,6 +3,7 @@ package com.uniquindio.userservice.service.impl;
 import com.uniquindio.userservice.client.AuthClient;
 import com.uniquindio.userservice.client.UserClient;
 import com.uniquindio.userservice.dto.*;
+import com.uniquindio.userservice.exception.InvalidOTPException;
 import com.uniquindio.userservice.exception.userException.ExternalServiceException;
 import com.uniquindio.userservice.exception.userException.IncorrectPasswordException;
 import com.uniquindio.userservice.exception.userException.UserNotFoundException;
@@ -170,8 +171,8 @@ public class AuthServiceImpl implements AuthService {
             if (e.getStatusCode().value() == 404) {
                 throw new UserNotFoundException("Usuario con email " + email + " no encontrado.");
             }
-            if (e.getStatusCode().value() == 409) {
-                throw new OtpCreationException("Error al generar el OTP.");
+            if (e.getStatusCode().value() == 400){
+                throw new InvalidOTPException("El opt es invalido o ha expirado");
             }
             throw new ExternalServiceException(
                     "Error al comunicarse con el servicio de usuarios: " + e.getResponseBodyAsString()
