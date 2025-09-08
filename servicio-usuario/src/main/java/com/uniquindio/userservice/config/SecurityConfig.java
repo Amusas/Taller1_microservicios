@@ -36,7 +36,8 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/v3/api-docs.yaml",
                                 "/swagger-resources/**",
-                                "/webjars/**")
+                                "/webjars/**",
+                                "/openapi.json")
                         .permitAll()
                         .requestMatchers(HttpMethod.POST,"/api/v1/users").permitAll()
                         .anyRequest().authenticated()

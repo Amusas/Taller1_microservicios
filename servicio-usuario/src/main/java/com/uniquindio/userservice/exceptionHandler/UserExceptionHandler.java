@@ -2,6 +2,7 @@ package com.uniquindio.userservice.exceptionHandler;
 
 import com.uniquindio.userservice.dto.ErrorResponse;
 import com.uniquindio.userservice.dto.ValidationErrorResponse;
+import com.uniquindio.userservice.exception.InvalidOTPException;
 import com.uniquindio.userservice.exception.OtpCreationException;
 import com.uniquindio.userservice.exception.authException.UnauthorizedOwnerAccessException;
 import com.uniquindio.userservice.exception.userException.*;
@@ -34,8 +35,7 @@ public class UserExceptionHandler {
                 .map(error -> new ValidationErrorResponse(
                         error.getField(), // Nombre del campo
                         error.getDefaultMessage() // Mensaje de error
-                ))
-                .collect(Collectors.toList());
+                )).toList();
 
         // Log de errores de validación
         log.error("Errores de validación encontrados: {}", errors);
@@ -95,7 +95,7 @@ public class UserExceptionHandler {
     public ResponseEntity<ErrorResponse> handleIncorrectPassword(IncorrectPasswordException ex) {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
-                ex.getMessage(),  // mensaje que vino desde la API externa
+                ex.getMessage(),
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
@@ -118,6 +118,16 @@ public class UserExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(), // 400 Bad Request
                 "El usuario ya tiene un otp activo",
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(InvalidOTPException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidOtpException(InvalidOTPException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(), // 400 Bad Request
+                ex.getMessage(),
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
