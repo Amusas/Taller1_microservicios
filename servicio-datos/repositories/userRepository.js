@@ -99,7 +99,7 @@ class UserRepository {
         console.log(`🔍 [UserRepository] Intento de crear usuario con email: ${userData.email}`);
         
         try {
-            const { name, email, password } = userData;
+            const { name, email, password, phone } = userData;
             
             // Verificar disponibilidad del email
             const isEmailAvailable = await this._checkEmailAvailability(email);
@@ -110,12 +110,12 @@ class UserRepository {
             
             // Crear usuario
             const query = `
-                INSERT INTO users (name, email, password)
-                VALUES ($1, $2, $3)
-                RETURNING *
+                INSERT INTO users (name, email, password, phone)
+                VALUES ($1, $2, $3, $4)
+                    RETURNING *
             `;
-            
-            const values = [name, email, password];
+
+            const values = [name, email, password, phone];
             const createdUser = await this._executeQueryAndReturnUser(query, values);
             
             console.log(`✅ [UserRepository] Usuario creado con ID: ${createdUser.id}`);
@@ -266,6 +266,12 @@ class UserRepository {
             paramCount++;
             updateFields.push(`password = $${paramCount}`);
             values.push(updateData.password);
+        }
+
+        if (updateData.phone !== undefined) {
+            paramCount++;
+            updateFields.push(`phone = $${paramCount}`);
+            values.push(updateData.phone);
         }
 
         // Si no hay campos para actualizar, lanzar error

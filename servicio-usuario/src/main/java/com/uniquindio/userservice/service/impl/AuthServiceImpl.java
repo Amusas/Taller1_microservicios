@@ -2,6 +2,7 @@ package com.uniquindio.userservice.service.impl;
 
 import com.uniquindio.userservice.client.AuthClient;
 import com.uniquindio.userservice.client.UserClient;
+import com.uniquindio.userservice.client.UserNotificationProducer;
 import com.uniquindio.userservice.dto.*;
 import com.uniquindio.userservice.exception.InvalidOTPException;
 import com.uniquindio.userservice.exception.userException.ExternalServiceException;
@@ -27,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserClient userClient;
     private final AuthClient authClient;
     private final JwtUtils jwtUtils;
+    private final UserNotificationProducer userNotificationProducer;
 
 
     @Override
@@ -45,6 +47,8 @@ public class AuthServiceImpl implements AuthService {
 
             // Generar token JWT
             String token = jwtUtils.generateToken(user);
+            userNotificationProducer.sendUserLogin(user);
+
             log.info("Token JWT generado exitosamente para el usuario {}", loginRequest.email());
 
             return token;

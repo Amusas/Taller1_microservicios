@@ -1,0 +1,44 @@
+package com.uniquindio.userservice.client;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uniquindio.userservice.dto.UserAuthResponse;
+import com.uniquindio.userservice.dto.notification.EventMessage;
+import com.uniquindio.userservice.dto.notification.EventType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class UserNotificationProducer {
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper; // Jackson para serializar eventos
+
+    public void sendUserLogin(UserAuthResponse user) {
+        EventMessage event = EventMessage.of(
+                EventType.USER_LOGIN,
+                "auth-service",
+                Map.of(
+                        "id", user.id(),
+                        "name", user.name(),
+                        "email", user.email(),
+                        "phone", user.phone()
+                )
+        );
+        send(event);
+    }
+
+    private void send(EventMessage event) {
+        try {
+            String eventJson = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send("user-events", event.id(), eventJson);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error serializando evento", e);//Agregar excepcion personalizada
+        }
+    }
+
+}
+

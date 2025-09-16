@@ -3,6 +3,7 @@ class UserResponse {
         this.id = user.id;
         this.email = user.email;
         this.name = user.name;
+        this.phone = user.phone;
     }
 
     // Convertir a objeto plano para respuesta JSON
@@ -10,7 +11,8 @@ class UserResponse {
         return {
             id: this.id,
             email: this.email,
-            name: this.name
+            name: this.name,
+            phone: this.phone,
         };
     }
 

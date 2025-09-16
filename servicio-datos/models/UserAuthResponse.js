@@ -3,6 +3,7 @@ class UserAuthResponse {
         this.id = user.id;
         this.email = user.email;
         this.name = user.name;
+        this.phone = user.phone;
         this.password = user.password; // Incluir password para autenticación
     }
 
@@ -12,6 +13,7 @@ class UserAuthResponse {
             id: this.id,
             email: this.email,
             name: this.name,
+            phone: this.phone,
             password: this.password
         };
     }

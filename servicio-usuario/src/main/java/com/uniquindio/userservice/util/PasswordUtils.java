@@ -14,7 +14,7 @@ public class PasswordUtils {
      */
     public static UserRegistration encryptPassword(UserRegistration user) {
         String encryptedPassword = passwordEncoder.encode(user.password());
-        return new UserRegistration(user.email(), encryptedPassword, user.name());
+        return new UserRegistration(user.email(), encryptedPassword, user.name(), user.phone());
     }
 
 

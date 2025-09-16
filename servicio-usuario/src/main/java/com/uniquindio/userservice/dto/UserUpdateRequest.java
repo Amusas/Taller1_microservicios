@@ -28,6 +28,10 @@ public record UserUpdateRequest(
         )
         @Size(min = 2, max = 50, message = "El nombre debe contener entre 2 y 50 caracteres")
         @NotBlank(message = "El nombre es obligatorio")
-        String name
+        String name,
+
+        @Size(max = 20, message = "El teléfono debe contener máximo 20 caracteres")
+        @NotBlank(message = "El teléfono es obligatorio")
+        String phone
 ) {
 }

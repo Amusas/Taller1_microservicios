@@ -5,6 +5,7 @@ class User {
         this.email = data.email;
         this.password = data.password;
         this.created_at = data.created_at;
+        this.phone = data.phone;
         this.account_status = data.account_status;
     }
 
@@ -19,6 +20,7 @@ class User {
             id: this.id,
             name: this.name,
             email: this.email,
+            phone: this.phone,
             created_at: this.created_at,
             account_status: this.account_status
         };

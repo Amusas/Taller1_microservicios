@@ -3,6 +3,7 @@ class UserRegister {
         this.email = data.email;
         this.password = data.password;
         this.name = data.name;
+        this.phone = data.phone;
     }
 
 
@@ -11,7 +12,8 @@ class UserRegister {
         return {
             email: this.email,
             password: this.password,
-            name: this.name
+            name: this.name,
+            phone: this.phone
         };
     }
 }

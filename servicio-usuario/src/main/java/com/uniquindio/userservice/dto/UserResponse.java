@@ -26,6 +26,8 @@ public record UserResponse(
                 description = "Correo electrónico del usuario",
                 example = "usuario@ejemplo.com"
         )
-        String email
+        String email,
+
+        String phone
 ) {
 }

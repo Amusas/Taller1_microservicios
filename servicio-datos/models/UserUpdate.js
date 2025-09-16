@@ -2,6 +2,7 @@ class UserUpdate {
     constructor(data) {
         this.email = data.email;
         this.name = data.name;
+        this.phone = data.phone;
     }
 
 
@@ -9,7 +10,8 @@ class UserUpdate {
     toJSON() {
         return {
             email: this.email,
-            name: this.name
+            name: this.name,
+            phone: this.phone
         };
     }
 }
