@@ -49,5 +49,11 @@ router.get('/:id', userController.getUserById.bind(userController));
  */
 router.delete('/:id', userController.deleteUser.bind(userController));
 
+/**
+ * @route   PATCH /api/users/:id/password
+ * @desc    Actualizar la contraseña de un usuario
+ * @access  Public
+ */
+router.patch('/:id/password', userController.updatePassword.bind(userController));
 
 module.exports = router;

@@ -15,4 +15,5 @@ public interface UserService {
 
     void deleteUser(int id);
 
+    boolean updatePassword(PasswordRecoveryRequest passwordRecoveryRequest, int id);
 }

@@ -229,6 +229,13 @@ public class UserClient {
 
         return response != null ? response.data() : null;
     }
-
+    public void recoverPassword(PasswordRecoveryRequest recoveryRequest, int id) {
+        webClient.patch()
+                .uri("{id}/password", id)
+                .bodyValue(recoveryRequest)
+                .retrieve()
+                .toBodilessEntity()
+                .block();
+    }
 }
 

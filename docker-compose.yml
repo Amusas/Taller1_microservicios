@@ -67,6 +67,9 @@ services:
       retries: 6
 
 
+
+
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.1
     container_name: zookeeper

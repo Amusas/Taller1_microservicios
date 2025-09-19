@@ -6,6 +6,4 @@ public interface AuthService {
     String login(LoginRequest loginRequest);
 
     OtpResponse requestOtp(OtpRequest otpRequest);
-
-    boolean updatePassword(PasswordRecoveryRequest passwordRecoveryRequest);
 }

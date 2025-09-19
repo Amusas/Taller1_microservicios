@@ -149,6 +149,27 @@ class UserRepository {
         }
     }
 
+
+    // READ - Obtener usuario por ID
+    async findByIdAndEmail(id, email) {
+        try {
+            const query = `
+                SELECT * FROM users 
+                WHERE id = $1 AND email= $2 AND account_status != 'DELETED'
+            `;
+
+            const result = await pool.query(query, [id, email]);
+
+            if (result.rows.length === 0) {
+                return null;
+            }
+
+            return UserResponse.fromUser(User.fromDatabase(result.rows[0]));
+        } catch (error) {
+            throw new Error(`Error finding user by ID: ${error.message}`);
+        }
+    }
+
     
     // READ - Obtener usuario por email
     async findByEmail(email) {
