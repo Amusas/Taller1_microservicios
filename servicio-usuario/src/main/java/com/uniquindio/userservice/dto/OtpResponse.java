@@ -46,6 +46,13 @@ public record OtpResponse(
                 example = "PENDING"
         )
         @NotNull(message = "El estado del OTP es obligatorio")
-        String otp_status
+        String otp_status,
+
+        @Schema(
+                description = "URL de recuperacion de contraseña",
+                example = "127.0.0.1:8001/api/v1/users/{id}/password"
+        )
+        @NotNull(message = "El url de recuperación de contraseña es obligatorio")
+                String url
 ) {
 }

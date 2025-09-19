@@ -1,9 +1,6 @@
 package com.uniquindio.userservice.controller;
 
-import com.uniquindio.userservice.dto.PaginatedUserResponse;
-import com.uniquindio.userservice.dto.UserRegistration;
-import com.uniquindio.userservice.dto.UserResponse;
-import com.uniquindio.userservice.dto.UserUpdateRequest;
+import com.uniquindio.userservice.dto.*;
 import com.uniquindio.userservice.service.interfaces.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -184,5 +181,27 @@ public class UserController {
         userService.deleteUser(id);
         log.info("✅ Usuario con ID: {} eliminado correctamente", id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Válida el OTP y actualiza la contraseña.
+     */
+    @Operation(
+            summary = "Recuperar contraseña",
+            description = "Valida el código OTP enviado al correo y permite restablecer la contraseña del usuario."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Contraseña actualizada correctamente",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(example = "true"))),
+            @ApiResponse(responseCode = "400", description = "OTP inválido o expirado"),
+            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    })
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<String> updatePassword(@RequestBody @Valid PasswordRecoveryRequest request, @PathVariable int  id) {
+        log.info("🔑 Recuperación de contraseña solicitada para: {}", id);
+        userService.updatePassword(request, id);
+        log.info("✅ Contraseña actualizada para: {}", id);
+        return ResponseEntity.ok("Contraseña reestablecida para el usuario");
     }
 }

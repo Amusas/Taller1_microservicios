@@ -62,33 +62,11 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     })
-    @PostMapping("/otp-generator")
+    @PostMapping("/otp")
     public ResponseEntity<OtpResponse> requestOtp(@RequestBody @Valid OtpRequest request) {
         log.info("📩 Solicitud de OTP para: {}", request.email());
         OtpResponse otp = authService.requestOtp(request);
-        log.info("✅ OTP generado para: {}", request.email());
+        log.info("✅ OTP generado para: {}. Dirígase a {} para cambiarlo.", request.email(), otp.url());
         return ResponseEntity.ok(otp);
-    }
-
-    /**
-     * Válida el OTP y actualiza la contraseña.
-     */
-    @Operation(
-            summary = "Recuperar contraseña",
-            description = "Valida el código OTP enviado al correo y permite restablecer la contraseña del usuario."
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Contraseña actualizada correctamente",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(example = "true"))),
-            @ApiResponse(responseCode = "400", description = "OTP inválido o expirado"),
-            @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
-    })
-    @PostMapping("/password-recovery")
-    public ResponseEntity<String> recoverPassword(@RequestBody @Valid PasswordRecoveryRequest request) {
-        log.info("🔑 Recuperación de contraseña solicitada para: {}", request.email());
-        authService.updatePassword(request);
-        log.info("✅ Contraseña actualizada para: {}", request.email());
-        return ResponseEntity.ok("Contraseña reestablecida para el usuario");
     }
 }
