@@ -388,22 +388,21 @@ public class UserServiceImpl implements UserService {
         String email = passwordRecoveryRequest.email();
         String otp = passwordRecoveryRequest.otp();
         try {
-            log.info("Intentando encontrar el usuario con id:{}, e email: {}", id, passwordRecoveryRequest.email());
+            log.info("Intentando encontrar el usuario con id:{}, e email: {}", id, email);
 
-            if (userClient.getUserById(id).email().equals(passwordRecoveryRequest.email())){
-                log.error("Error en actualización de contraseña: Usuario con el email {}, no es el mismo usuario con id {}", passwordRecoveryRequest.email(), id);
-                throw  new EmailAndIdNotFromSameUserException("Email "+passwordRecoveryRequest.email() +" no corresponde al correo del usuario con id: "+ id);
+            if (!userClient.getUserById(id).email().equals(email)){
+                log.error("Error en actualización de contraseña: Usuario con el email {}, no es el mismo usuario con id {} ", email, id);
+                throw  new EmailAndIdNotFromSameUserException("Email "+email +" no corresponde al correo del usuario con id: "+ id);
             }
 
-            log.info("Intentando cambiar la contraseña para el usuario con email: {}, usando el OTP: {}", email, otp);
+            log.info("Intentando cambiar la contraseña para el usuario con id: {}, e email: {}, usando el OTP: {}", id, email, otp);
             PasswordRecoveryRequest pr = PasswordUtils.encryptPassword(passwordRecoveryRequest);
-
             userClient.recoverPassword(pr, id);
 
             return true;
 
         } catch (WebClientResponseException e) {
-            log.error("Error al generar el otp. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            log.error("Error al actualizar la contraseña. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());
             if (e.getStatusCode().value() == 404) {
                 throw new UserNotFoundException("Usuario con email " + email + " no encontrado.");
             }

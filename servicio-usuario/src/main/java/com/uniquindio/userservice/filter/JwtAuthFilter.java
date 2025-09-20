@@ -35,6 +35,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private static final List<String> PUBLIC_PATTERNS = List.of(
             "/api/v1/auth/**",
+            "/api/v1/users/*/password",
             "/api/v1/users",            // controlaremos el método abajo
             "/v3/api-docs/**",
             "/swagger-ui/**",
