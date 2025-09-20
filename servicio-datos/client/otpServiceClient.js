@@ -3,7 +3,7 @@ const axios = require("axios");
 class OtpServiceClient {
     constructor() {
         // URL del servicio OTP desde variable de entorno
-        this.baseUrl = process.env.OTP_SERVICE_URL || "http://localhost:8083/api/otp";
+        this.baseUrl = process.env.OTP_SERVICE_URL || "http://localhost:8084/api/otp";
     }
 
     /**

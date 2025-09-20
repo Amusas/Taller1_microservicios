@@ -66,20 +66,6 @@ services:
       timeout: 5s
       retries: 6
 
-  servicio-otp:
-    build: ./servicio-otp
-    container_name: otp-service
-    restart: unless-stopped
-    ports:
-      - "8083:8083"
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-
   notification-service:
     build: ./servicio-notificaciones
     container_name: notification-service
@@ -92,6 +78,20 @@ services:
       - app-network
     depends_on:
       - kafka
+
+  servicio-otp:
+    build: ./servicio-otp
+    container_name: otp-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8083/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.1
