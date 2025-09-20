@@ -66,9 +66,18 @@ services:
       timeout: 5s
       retries: 6
 
-
-
-
+  notification-service:
+    build: ./servicio-notificaciones
+    container_name: notification-service
+    restart: unless-stopped
+    env_file:
+      - ./servicio-notificaciones/.env
+    ports:
+      - "8083:8083"
+    networks:
+      - app-network
+    depends_on:
+      - kafka
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.1
@@ -117,6 +126,8 @@ services:
       - zookeeper
     networks:
       - app-network
+
+
 
 
 networks:
