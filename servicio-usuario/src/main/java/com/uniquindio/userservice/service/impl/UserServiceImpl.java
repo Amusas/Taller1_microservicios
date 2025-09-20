@@ -2,6 +2,7 @@ package com.uniquindio.userservice.service.impl;
 
 import com.uniquindio.userservice.annotation.IsOwner;
 import com.uniquindio.userservice.client.UserClient;
+import com.uniquindio.userservice.client.UserNotificationProducer;
 import com.uniquindio.userservice.dto.*;
 import com.uniquindio.userservice.exception.userException.DuplicateEmailException;
 import com.uniquindio.userservice.exception.userException.ExternalServiceException;
@@ -57,6 +58,7 @@ public class UserServiceImpl implements UserService {
      * Cliente HTTP para la comunicación con el servicio externo de usuarios.
      */
     private final UserClient userClient;
+    private final UserNotificationProducer userNotificationProducer;
 
     /**
      * Registra un nuevo usuario en el sistema.
@@ -98,6 +100,7 @@ public class UserServiceImpl implements UserService {
             log.info("Intentando registrar usuario con email: {}", encryptedUser.email());
             UserResponse response = userClient.registerUser(encryptedUser);
             log.info("Usuario registrado exitosamente con id: {}", response.id());
+            userNotificationProducer.sendNewUser(response); //Envia la
             return response;
         } catch (WebClientResponseException e) {
             log.error("Error al registrar usuario. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());

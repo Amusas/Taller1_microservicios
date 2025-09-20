@@ -3,6 +3,7 @@ package com.uniquindio.userservice.client;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uniquindio.userservice.dto.UserAuthResponse;
+import com.uniquindio.userservice.dto.UserResponse;
 import com.uniquindio.userservice.dto.notification.EventMessage;
 import com.uniquindio.userservice.dto.notification.EventType;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,21 @@ public class UserNotificationProducer {
         EventMessage event = EventMessage.of(
                 EventType.USER_LOGIN,
                 "auth-service",
+                Map.of(
+                        "id", user.id(),
+                        "name", user.name(),
+                        "email", user.email(),
+                        "phone", user.phone()
+                )
+        );
+        send(event);
+    }
+
+    //Envia un evento a kafka sobre la creacipon de un nuevo usuario en el sistema
+    public void sendNewUser(UserResponse user) {
+        EventMessage event = EventMessage.of(
+                EventType.USER_REGISTERED,
+                "user-service",
                 Map.of(
                         "id", user.id(),
                         "name", user.name(),
