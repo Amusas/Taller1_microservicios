@@ -15,19 +15,18 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U admin_user -d usuariosdb" ]
+      test: ["CMD-SHELL", "pg_isready -U admin_user -d usuariosdb"]
       interval: 10s
       timeout: 5s
       retries: 6
-  
+
   user-service:
     build: ./servicio-usuario
     container_name: user-service
     restart: unless-stopped
     environment:
-      # Rutas internas dentro del contenedor donde montamos las llaves
       - PUBLIC_KEY_PATH=/app/keys/public-key.pem
-      - PRIVATE_KEY_PATH=/app/keys/private-key.pem      # URL del data-service para comunicación entre microservicios
+      - PRIVATE_KEY_PATH=/app/keys/private-key.pem
       - DATA_SERVICE_URL=http://data-service:8082/api/users
       - AUTH_SERVICE_URL=http://data-service:8082/api/auth
     volumes:
@@ -54,21 +53,33 @@ services:
       DB_USER: admin_user
       DB_PASSWORD: supersecurepassword
       DB_NAME: usuariosdb
+      OTP_SERVICE_URL: http://servicio-otp:8083/api/otp
     depends_on:
       - database
+      - servicio-otp
     ports:
       - "8082:8082"
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
       interval: 10s
       timeout: 5s
       retries: 6
 
-
-
-
+  servicio-otp:
+    build: ./servicio-otp
+    container_name: otp-service
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.1
@@ -107,7 +118,7 @@ services:
     container_name: kafka-ui
     restart: unless-stopped
     ports:
-      - "8081:8080"   # Externo 8081 -> Interno 8080
+      - "8081:8080"
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
@@ -118,7 +129,6 @@ services:
     networks:
       - app-network
 
-
 networks:
   app-network:
     driver: bridge
@@ -126,3 +136,4 @@ networks:
 volumes:
   postgres_data:
   kafka_data:
+

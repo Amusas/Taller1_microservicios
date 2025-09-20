@@ -5,12 +5,14 @@ const UserAuthResponse = require('../models/UserAuthResponse');
 const UserRepository = require('../repositories/userRepository');
 const ResponseModel = require('../models/ResponseModel');
 const OtpRepository = require("../repositories/otpRepository");
+const OtpServiceClient = require("../client/otpServiceClient");
 
 class UserControllerDB {
 
     constructor() {
         this.userRepository = new UserRepository();
         this.otpRepository = new OtpRepository();
+        this.otpServiceClient = new OtpServiceClient();
     }
 
     /**
@@ -305,18 +307,37 @@ class UserControllerDB {
     }
 
     /**
-     * Patch /api/users/{id}/password
+     * PATCH /api/users/{id}/password
      * Verifica un OTP para un usuario y reestablece su contraseña
      * @param {Object} req - Request object de Express
      * @param {Object} res - Response object de Express
      */
     async updatePassword(req, res) {
-        console.log('🚀 [OtpController] Verificando OTP y reestableciendo contraseña...');
+        console.log('🚀 [UserControllerDB] Verificando OTP y reestableciendo contraseña...');
 
         const userId = parseInt(req.params.id);
 
         try {
             const { otp, email, password } = req.body;
+
+            // Validar que los datos existan
+            if (!otp || !email || !password) {
+                const response = ResponseModel.badRequest('El OTP, el ID de usuario y su contraseña son obligatorios');
+                response.log('[UserControllerDB] Otp, email, o contraseña no presentes');
+                return response.send(res);
+            }
+
+            // 🔍 Validar formato del OTP primero (con el servicio externo)
+            const checkRequest = { otp };
+            const formatResponse = await this.otpServiceClient.checkOtpFormat(checkRequest);
+
+            if (!formatResponse.isValidOtp) {
+                const response = ResponseModel.badRequest('El formato del OTP es inválido');
+                console.log(`🚫 [UserControllerDB] Formato inválido de OTP recibido: ${otp}`);
+                return response.send(res);
+            }
+
+            console.log(`✅ [UserControllerDB] Formato de OTP válido: ${otp}`);
 
             // Obtener usuario del repositorio
             const user = await this.userRepository.findByIdAndEmail(userId, email);
@@ -329,40 +350,34 @@ class UserControllerDB {
 
             console.log(`✅ [UserControllerDB] Usuario obtenido exitosamente con ID: ${user.id}`);
 
-            // Validar que los datos existan
-            if (!otp || !email || !password) {
-                const response = ResponseModel.badRequest('El OTP, el ID de usuario y su contraseña son obligatorios');
-                response.log('[OtpController] Otp, email, o contraseña no presentes');
-                return response.send(res);
-            }
-
-            // Intentar verificar el OTP
+            // 🔍 Verificar existencia y validez del OTP en la base
             const isVerified = await this.otpRepository.verify(userId, email, otp);
 
             if (!isVerified) {
                 const response = ResponseModel.badRequest('El OTP es inválido o ha expirado');
-                console.log(`🚫 [OtpController] Fallo en la verificación del OTP para usuario: ${email}`);
+                console.log(`🚫 [UserControllerDB] Fallo en la verificación del OTP para usuario: ${email}`);
                 return response.send(res);
             }
 
-            console.log(`✅ [OtpController] OTP verificado para usuario: ${email}`);
+            console.log(`✅ [UserControllerDB] OTP verificado para usuario: ${email}`);
 
-            console.log(`🚀 [OtpController] Reestableciendo contraseña para el usuario: ${email}`);
-            const isUpdated = await this.userRepository.updatePassword(userId, password)
+            // 🚀 Reestablecer contraseña
+            console.log(`🚀 [UserControllerDB] Reestableciendo contraseña para el usuario: ${email}`);
+            const isUpdated = await this.userRepository.updatePassword(userId, password);
 
             if (!isUpdated) {
                 const response = ResponseModel.badRequest('Error al actualizar la contraseña');
-                console.log(`🚫 [OtpController] Fallo en la actualizacion de contraseña para usuario: ${email}`);
+                console.log(`🚫 [UserControllerDB] Fallo en la actualización de contraseña para usuario: ${email}`);
                 return response.send(res);
             }
 
-            const response = this._createSuccessResponse('Contaseña reestablecida exitosamente');
-            console.log(`✅ [OtpController] Contraseña reestablecida para usuario: ${email}`);
+            const response = this._createSuccessResponse('Contraseña reestablecida exitosamente');
+            console.log(`✅ [UserControllerDB] Contraseña reestablecida para usuario: ${email}`);
             return response.send(res);
 
         } catch (error) {
             const response = this._handleControllerError(error);
-            response.log('[OtpController]');
+            response.log('[UserControllerDB]');
             return response.send(res);
         }
     }

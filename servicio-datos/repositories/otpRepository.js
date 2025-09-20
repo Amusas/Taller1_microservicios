@@ -54,6 +54,14 @@ class OtpRepository {
      */
     async _checkExistingActiveOtp(userId) {
         try {
+            const expireQuery = `
+                UPDATE otp
+                SET otp_status = 'EXPIRED'
+                WHERE otp_status = 'CREATED'
+                  AND created_at <= NOW() - INTERVAL '5 minutes'
+            `;
+
+            await pool.query(expireQuery);
             const query = `
                 SELECT 1
                 FROM otp
