@@ -25,6 +25,7 @@ services:
     container_name: user-service
     restart: unless-stopped
     environment:
+      # Rutas internas dentro del contenedor donde montamos las llaves
       - PUBLIC_KEY_PATH=/app/keys/public-key.pem
       - PRIVATE_KEY_PATH=/app/keys/private-key.pem
       - DATA_SERVICE_URL=http://data-service:8082/api/users
@@ -53,10 +54,8 @@ services:
       DB_USER: admin_user
       DB_PASSWORD: supersecurepassword
       DB_NAME: usuariosdb
-      OTP_SERVICE_URL: http://servicio-otp:8083/api/otp
     depends_on:
       - database
-      - servicio-otp
     ports:
       - "8082:8082"
     networks:
@@ -80,6 +79,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
+
+  notification-service:
+    build: ./servicio-notificaciones
+    container_name: notification-service
+    restart: unless-stopped
+    env_file:
+      - ./servicio-notificaciones/.env
+    ports:
+      - "8083:8083"
+    networks:
+      - app-network
+    depends_on:
+      - kafka
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.7.1
@@ -118,7 +130,7 @@ services:
     container_name: kafka-ui
     restart: unless-stopped
     ports:
-      - "8081:8080"
+      - "8081:8080"   # Externo 8081 -> Interno 8080
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
