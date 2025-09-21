@@ -24,6 +24,9 @@ class OtpController {
             // Guardamos OTP en nuestra DB con el email
             const createdOtp = await this.otpRepository.create({ otp: otpResponse.otp, email });
 
+            const baseUrl = `http://localhost:8080`; // servicio de datos corriendo en 8082
+            createdOtp.url = `${baseUrl}/api/v1/users/$createdOtp.userId}/password`;
+
             const response = ResponseModel.success(
                 "OTP creado exitosamente",
                 createdOtp.toJSON(),
