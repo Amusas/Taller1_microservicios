@@ -4,7 +4,9 @@ class OtpServiceClient {
     constructor() {
         // URL del servicio OTP desde variable de entorno
         this.baseUrl = process.env.OTP_SERVICE_URL || "http://localhost:8084/api/otp";
+        console.log("url del sevicio otp: " + this.baseUrl)
     }
+
 
     /**
      * Llama al servicio-otp para crear un nuevo OTP

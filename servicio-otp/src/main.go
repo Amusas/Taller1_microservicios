@@ -16,6 +16,6 @@ func main() {
 	router.HandleFunc("/api/otp", handlers.CreateOtp).Methods("POST")
 	router.HandleFunc("/api/otp/check", handlers.CheckOtp).Methods("POST")
 
-	log.Println("🚀 OTP Service running on port 8083")
-	log.Fatal(http.ListenAndServe(":8083", router))
+	log.Println("🚀 OTP Service running on port 8084")
+	log.Fatal(http.ListenAndServe(":8084", router))
 }

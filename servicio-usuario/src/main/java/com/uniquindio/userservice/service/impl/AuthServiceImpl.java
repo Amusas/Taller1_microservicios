@@ -111,7 +111,7 @@ public class AuthServiceImpl implements AuthService {
                 log.error("Fallo al crear el OTP para el usuario {}: Estado: {}", user.id(), otp.otp_status());
                 throw new OtpCreationException("Fallo al crear el OTP.");
             }
-
+            userNotificationProducer.sendRequestOtp(user, otp);
             return otp;
 
         } catch (WebClientResponseException e) {

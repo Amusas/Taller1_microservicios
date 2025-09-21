@@ -66,7 +66,7 @@ public class AuthController {
     public ResponseEntity<OtpResponse> requestOtp(@RequestBody @Valid OtpRequest request) {
         log.info("📩 Solicitud de OTP para: {}", request.email());
         OtpResponse otp = authService.requestOtp(request);
-        log.info("✅ OTP generado para: {}. Dirígase a {} para cambiarlo.", request.email(), otp.url());
+        log.info("✅ OTP generado para: {}.", request.email());
         return ResponseEntity.ok(otp);
     }
 }

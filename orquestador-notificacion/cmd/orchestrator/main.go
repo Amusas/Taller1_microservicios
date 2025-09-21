@@ -43,12 +43,18 @@ func main() {
 	z.Info("kafka connectivity confirmed")
 
 	// Crear producer para topic de notificaciones
-	producer := kafkaPkg.NewProducer(cfg.KafkaBrokers, "notifications")
+	producerTopic := getEnv("KAFKA_PRODUCER_TOPIC", "notifications")
+	producer := kafkaPkg.NewProducer(cfg.KafkaBrokers, producerTopic)
 
 	// infra: registry, services, handlers
 	reg := handler.NewRegistry()
 	userSvc := service.NewUserService(producer, z) // ⬅️ ahora con producer y logger
+
+	// Registrar handlers
 	reg.Register(handler.NewUserRegisteredHandler(userSvc, z))
+	reg.Register(handler.NewUserLoginHandler(userSvc, z))
+	reg.Register(handler.NewPasswordChangedHandler(userSvc, z))
+	reg.Register(handler.NewOtpRequestedHandler(userSvc, z))
 
 	proc := processor.NewProcessor(reg, z)
 
@@ -111,4 +117,11 @@ func checkKafkaConnectivity(brokers []string) error {
 	}
 
 	return nil
+}
+
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }

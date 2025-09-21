@@ -2,6 +2,7 @@ package com.uniquindio.userservice.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uniquindio.userservice.dto.OtpResponse;
 import com.uniquindio.userservice.dto.UserAuthResponse;
 import com.uniquindio.userservice.dto.UserResponse;
 import com.uniquindio.userservice.dto.notification.EventMessage;
@@ -32,6 +33,22 @@ public class UserNotificationProducer {
         send(event);
     }
 
+    public void sendRequestOtp(UserAuthResponse user, OtpResponse otp) {
+        EventMessage event = EventMessage.of(
+                EventType.OTP_REQUESTED,
+                "auth-service",
+                Map.of(
+                        "id", user.id(),
+                        "name", user.name(),
+                        "email", user.email(),
+                        "phone", user.phone(),
+                        "url-recovery", otp.url()
+                )
+        );
+        send(event);
+    }
+
+
     //Envia un evento a kafka sobre la creacipon de un nuevo usuario en el sistema
     public void sendNewUser(UserResponse user) {
         EventMessage event = EventMessage.of(
@@ -46,6 +63,22 @@ public class UserNotificationProducer {
         );
         send(event);
     }
+
+    //Envia un evento a kafka sobre la creacipon de un nuevo usuario en el sistema
+    public void sendPasswordChanged(UserResponse user) {
+        EventMessage event = EventMessage.of(
+                EventType.PASSWORD_CHANGED,
+                "user-service",
+                Map.of(
+                        "id", user.id(),
+                        "name", user.name(),
+                        "email", user.email(),
+                        "phone", user.phone()
+                )
+        );
+        send(event);
+    }
+
 
     private void send(EventMessage event) {
         try {

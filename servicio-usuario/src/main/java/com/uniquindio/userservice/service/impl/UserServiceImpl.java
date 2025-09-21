@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
             log.info("Intentando registrar usuario con email: {}", encryptedUser.email());
             UserResponse response = userClient.registerUser(encryptedUser);
             log.info("Usuario registrado exitosamente con id: {}", response.id());
-            userNotificationProducer.sendNewUser(response); //Envia la
+            userNotificationProducer.sendNewUser(response);
             return response;
         } catch (WebClientResponseException e) {
             log.error("Error al registrar usuario. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -393,13 +393,15 @@ public class UserServiceImpl implements UserService {
         try {
             log.info("Intentando encontrar el usuario con id:{}, e email: {}", id, email);
 
-            if (!userClient.getUserById(id).email().equals(email)){
+            UserResponse response = userClient.getUserById(id);
+            if (!response.email().equals(email)){
                 log.error("Error en actualización de contraseña: Usuario con el email {}, no es el mismo usuario con id {} ", email, id);
                 throw  new EmailAndIdNotFromSameUserException("Email "+email +" no corresponde al correo del usuario con id: "+ id);
             }
 
             log.info("Intentando cambiar la contraseña para el usuario con id: {}, e email: {}, usando el OTP: {}", id, email, otp);
             PasswordRecoveryRequest pr = PasswordUtils.encryptPassword(passwordRecoveryRequest);
+            userNotificationProducer.sendPasswordChanged(response);
             userClient.recoverPassword(pr, id);
 
             return true;

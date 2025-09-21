@@ -1,5 +1,10 @@
 package config
 
+import (
+	"os"
+	"strings"
+)
+
 type Config struct {
 	KafkaBrokers []string
 	KafkaTopic   string
@@ -7,11 +12,24 @@ type Config struct {
 }
 
 func LoadFromEnv() Config {
-	// Por simplicidad: valores hardcodeados o leer env vars aquí
-	return Config{
-		KafkaBrokers: []string{"localhost:29092"},
-		KafkaTopic:   "user-events",
-		GroupID:      "kafka-listener-group",
+	brokers := os.Getenv("KAFKA_BROKERS")
+	if brokers == "" {
+		brokers = "localhost:29092"
 	}
 
+	topic := os.Getenv("KAFKA_CONSUMER_TOPIC")
+	if topic == "" {
+		topic = "user-events"
+	}
+
+	groupID := os.Getenv("KAFKA_GROUP_ID")
+	if groupID == "" {
+		groupID = "kafka-listener-group"
+	}
+
+	return Config{
+		KafkaBrokers: strings.Split(brokers, ","),
+		KafkaTopic:   topic,
+		GroupID:      groupID,
+	}
 }

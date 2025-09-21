@@ -20,6 +20,21 @@ services:
       timeout: 5s
       retries: 6
 
+  orquestador-notificacion:
+    build: ./orquestador-notificacion
+    container_name: notification-orchestrator
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      KAFKA_PRODUCER_TOPIC: notifications
+      KAFKA_CONSUMER_TOPIC: user-events
+      KAFKA_GROUP_ID: kafka-listener-group
+    ports:
+      - "8085:8080"
+    networks:
+      - app-network
+
   user-service:
     build: ./servicio-usuario
     container_name: user-service
@@ -54,6 +69,7 @@ services:
       DB_USER: admin_user
       DB_PASSWORD: supersecurepassword
       DB_NAME: usuariosdb
+      OTP_SERVICE_URL: http://otp-service:8084/api/otp
     depends_on:
       - database
     ports:
@@ -88,7 +104,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8083/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/health" ]
       interval: 10s
       timeout: 5s
       retries: 6
