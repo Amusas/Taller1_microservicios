@@ -4,10 +4,13 @@ import com.uniquindio.userservice.annotation.IsOwner;
 import com.uniquindio.userservice.client.UserClient;
 import com.uniquindio.userservice.client.UserNotificationProducer;
 import com.uniquindio.userservice.dto.*;
+import com.uniquindio.userservice.exception.InvalidOTPException;
+import com.uniquindio.userservice.exception.OtpCreationException;
 import com.uniquindio.userservice.exception.userException.DuplicateEmailException;
 import com.uniquindio.userservice.exception.userException.ExternalServiceException;
 import com.uniquindio.userservice.exception.userException.InvalidIdException;
 import com.uniquindio.userservice.exception.userException.UserNotFoundException;
+import com.uniquindio.userservice.exception.userException.EmailAndIdNotFromSameUserException;
 import com.uniquindio.userservice.service.interfaces.UserService;
 import com.uniquindio.userservice.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
@@ -353,4 +356,65 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+
+    /**
+     * Recupera la contraseña del usuario, haciendo uso del otp.
+     *
+     * <p>Este método implementa la lógica de negocio para la recuperación de contraseñas,
+     * incluyendo validación del email antes de realizar la operación en el servicio externo, con el uso del otp.</p>
+     *
+     * <p><strong>Validaciones previas:</strong></p>
+     * <ul>
+     *   <li>El email del usuario debe ser una cadena de texto con formato de correo xxx@dominio.xxx</li>
+     *   <li>El otp del usuario debe ser un número de 6 dígitos xxxxxx</li>
+     * </ul>
+     *
+     * <p><strong>Manejo de errores:</strong></p>
+     * <ul>
+     *   <li><strong>404 (Not Found):</strong> Se lanza {@link UserNotFoundException} si el usuario no existe</li>
+     *   <li><strong>404 (Not Found):</strong> Se lanza {@link EmailAndIdNotFromSameUserException} si el usuario con el correo provisto no coincide con el usuario con el id provisto</li>
+     *   <li><strong>409 (Conflict):</strong> Se lanza {@link OtpCreationException} si hay un error con el otp</li>
+     *   <li><strong>Otros códigos:</strong> Se lanza {@link ExternalServiceException} con detalles del error</li>
+     * </ul>
+     *
+     *
+     * @param passwordRecoveryRequest contiene el email del usuario, y su otp, para re-establecer su contraseña
+     * @return {@link Boolean} True si la actualización fue exitosa. False si no.
+     * @throws UserNotFoundException si el usuario con el email especificado no existe
+     * @throws EmailAndIdNotFromSameUserException si el usuario con el correo provisto no coincide con el usuario con el id provisto
+     * @throws OtpCreationException si el otp no se pudo validar
+     * @throws ExternalServiceException si ocurre un error de comunicación con el servicio externo
+     * @see UserClient#recoverPassword(PasswordRecoveryRequest, int)
+     */
+    @Override
+    public boolean updatePassword(PasswordRecoveryRequest passwordRecoveryRequest, int id) {
+        String email = passwordRecoveryRequest.email();
+        String otp = passwordRecoveryRequest.otp();
+        try {
+            log.info("Intentando encontrar el usuario con id:{}, e email: {}", id, email);
+
+            if (!userClient.getUserById(id).email().equals(email)){
+                log.error("Error en actualización de contraseña: Usuario con el email {}, no es el mismo usuario con id {} ", email, id);
+                throw  new EmailAndIdNotFromSameUserException("Email "+email +" no corresponde al correo del usuario con id: "+ id);
+            }
+
+            log.info("Intentando cambiar la contraseña para el usuario con id: {}, e email: {}, usando el OTP: {}", id, email, otp);
+            PasswordRecoveryRequest pr = PasswordUtils.encryptPassword(passwordRecoveryRequest);
+            userClient.recoverPassword(pr, id);
+
+            return true;
+
+        } catch (WebClientResponseException e) {
+            log.error("Error al actualizar la contraseña. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            if (e.getStatusCode().value() == 404) {
+                throw new UserNotFoundException("Usuario con email " + email + " no encontrado.");
+            }
+            if (e.getStatusCode().value() == 400){
+                throw new InvalidOTPException("El opt es invalido o ha expirado");
+            }
+            throw new ExternalServiceException(
+                    "Error al comunicarse con el servicio de usuarios: " + e.getResponseBodyAsString()
+            );
+        }
+    }
 }

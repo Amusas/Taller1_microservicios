@@ -29,18 +29,6 @@ public class AuthClient {
 
         return response != null ? response.data() : null;
     }
-
-
-    public void recoverPassword(PasswordRecoveryRequest recoveryRequest) {
-        webClient.post()
-                .uri("/otp/recover-password")
-                .bodyValue(recoveryRequest)
-                .retrieve()
-                .toBodilessEntity()
-                .block();
-    }
-
-
 }
 
 

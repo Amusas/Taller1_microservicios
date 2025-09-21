@@ -230,5 +230,27 @@ public class UserClient {
         return response != null ? response.data() : null;
     }
 
+    /**
+     * Cambia la contraseña de un usuario
+     *
+     * <p>Este método envía una petición PATCH al endpoint {@code /{id}/password} del servicio
+     * de usuarios para procesar la solicitud de cambio de contraseña.</p>
+     *
+     * <p><strong>Nota:</strong> Este método es bloqueante (usa {@code .block()}) para
+     * mantener compatibilidad con código síncrono existente.</p>
+     *
+     * @param recoveryRequest solicitud con el correo y otp del usuario a consultar
+     * @param id único del usuario a consultar. Si el usuario no existe o la operación falla
+     * @throws WebClientResponseException si ocurre un error en la comunicación HTTP
+     * @see UserResponse
+     */
+    public void recoverPassword(PasswordRecoveryRequest recoveryRequest, int id) {
+        webClient.patch()
+                .uri("/{id}/password", id)
+                .bodyValue(recoveryRequest)
+                .retrieve()
+                .toBodilessEntity()
+                .block();
+    }
 }
 

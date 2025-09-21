@@ -54,6 +54,14 @@ class OtpRepository {
      */
     async _checkExistingActiveOtp(userId) {
         try {
+            const expireQuery = `
+                UPDATE otp
+                SET otp_status = 'EXPIRED'
+                WHERE otp_status = 'CREATED'
+                  AND created_at <= NOW() - INTERVAL '5 minutes'
+            `;
+
+            await pool.query(expireQuery);
             const query = `
                 SELECT 1
                 FROM otp
@@ -119,20 +127,20 @@ class OtpRepository {
 
     /**
      * VERIFY - Valida un OTP para un usuario.
+     * @param {number} userId - ID del usuario
      * @param {string} email - Email del usuario
      * @param {string} otp - OTP de 6 dígitos proporcionado por el usuario
      * @returns {Promise<boolean>} true si el OTP es válido y se actualiza a VERIFIED, false si no es válido
      * @throws {Error} Si hay un error en la base de datos
      */
-    async verify(email, otp) {
+    async verify(userId, email, otp) {
         try {
             // 🔹 Buscar usuario por email
-            const user = await this.userRepository.findByEmail(email);
+            const user = await this.userRepository.findByIdAndEmail(userId, email);
             if (!user) {
-                console.log(`🚫 [OtpRepository] Usuario con email ${email} no encontrado`);
+                console.log(`🚫 [OtpRepository] Usuario con ID ${userId} y correo ${email} no encontrado`);
                 return false;
             }
-            const userId = user.id;
 
             console.log(`🔍 [OtpRepository] Intento de verificar OTP para el usuario ${userId} con otp: ${otp}`);
 
