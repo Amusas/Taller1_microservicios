@@ -29,6 +29,7 @@ func (s *userServiceImpl) OnUserRegistered(ctx context.Context, id int, email, n
 		"user_id":  id,
 		"email":    email,
 		"name":     name,
+		"phone":    phone,
 		"channel":  "EMAIL",
 		"template": "validate_account",
 	}
@@ -52,8 +53,9 @@ func (s *userServiceImpl) SendNotification(ctx context.Context, id int, email, n
 		"user_id":  id,
 		"email":    email,
 		"name":     name,
+		"phone":    phone,
 		"channel":  channel,
-		"template": "password_recovery",
+		"template": template,
 	}
 
 	payload, err := json.Marshal(notif)
@@ -79,7 +81,6 @@ func chooseTarget(channel, email, phone string) string {
 
 func (s *userServiceImpl) SendOtpRecovery(ctx context.Context, id int, email, name, url string) error {
 	event := map[string]interface{}{
-		"type":     "PASSWORD_RECOVERY",
 		"user_id":  id,
 		"email":    email,
 		"name":     name,
