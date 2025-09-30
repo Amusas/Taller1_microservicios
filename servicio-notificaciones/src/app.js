@@ -131,8 +131,16 @@ const startKafkaConsumer = async () => {
                 console.log("📩 Mensaje recibido de Kafka:", payload);
 
                 if (payload.type === "EMAIL") {
-                    const subject = renderTemplate(emailTemplates[payload.template].subject, payload.data);
-                    const text = renderTemplate(emailTemplates[payload.template].text, payload.data);
+                    const template = emailTemplates[payload.template];
+
+                    if (!template) {
+                        console.error(`❌ Template no encontrado: ${payload.template}`);
+                        return;
+                    }
+
+                    // Siempre usar el subject y text del template
+                    const subject = renderTemplate(template.subject, payload.data);
+                    const text = renderTemplate(template.text, payload.data);
 
                     await sgMail.send({
                         to: payload.to,
@@ -142,7 +150,6 @@ const startKafkaConsumer = async () => {
                     });
 
                     console.log("📧 Correo enviado vía Kafka ✅");
-
                 } else if (payload.type === "SMS") {
                     const body = renderTemplate(smsTemplates[payload.template], payload.data);
 
