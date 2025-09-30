@@ -54,6 +54,7 @@ func main() {
 	reg.Register(handler.NewPasswordChangedHandler(userSvc, z)) // resetPassword
 	reg.Register(handler.NewOtpRequestedHandler(userSvc, z))    // OTP
 	reg.Register(handler.NewUserLoginHandler(userSvc, z))       // login_alert
+	reg.Register(handler.NewUserVerifiedHandler(userSvc, z))    // verified_user
 
 	// etc.
 

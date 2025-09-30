@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	_ "fmt"
+
 	"github.com/andrew/orquestador-notificacion/internal/domain"
 	"github.com/andrew/orquestador-notificacion/internal/service"
 	"go.uber.org/zap"
@@ -13,6 +14,7 @@ type UserRegisteredPayload struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 	ID    int    `json:"id"`
+	Url   string `json:"url"`
 }
 
 type UserRegisteredHandler struct {
@@ -35,11 +37,14 @@ func (h *UserRegisteredHandler) Handle(ctx context.Context, e *domain.Event) err
 	}
 
 	// Delegar la lógica de negocio al service (Single Responsibility)
-	if err := h.userSvc.OnUserRegistered(ctx, p.ID, p.Email, p.Name, p.Phone); err != nil {
+	if err := h.userSvc.OnUserRegistered(ctx, p.ID, p.Email, p.Name, p.Phone, p.Url); err != nil {
 		h.logger.Error("user service failed", zap.Error(err))
 		return err
 	}
 
-	h.logger.Info("processed USER_REGISTERED", zap.Int("user_id", p.ID), zap.String("email", p.Email))
+	h.logger.Info("processed USER_REGISTERED",
+		zap.Int("user_id", p.ID),
+		zap.String("email", p.Email),
+		zap.String("url", p.Url))
 	return nil
 }

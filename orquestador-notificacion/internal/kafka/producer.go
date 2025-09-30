@@ -3,6 +3,7 @@ package kafka
 import (
 	"context"
 	"encoding/json"
+
 	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 )
