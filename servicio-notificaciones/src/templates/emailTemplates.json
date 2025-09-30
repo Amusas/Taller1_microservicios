@@ -1,0 +1,18 @@
+{
+  "password_recovery": {
+    "subject": "Recuperación de contraseña 🔐",
+    "text": "Hola {{name}},\n\nHemos recibido una solicitud para restablecer tu contraseña. Para continuar, haz clic en el siguiente enlace:\n\n{{url}}\n\nSi no solicitaste este cambio, ignora este correo.\n\nSaludos,\nEl equipo"
+  },
+  "password_changed_alert": {
+    "subject": "Tu contraseña ha sido cambiada ✅",
+    "text": "Hola {{name}},\n\nTe informamos que tu contraseña fue modificada exitosamente.\n\nSi fuiste tú, no necesitas hacer nada más. Si no reconoces este cambio, contacta de inmediato al soporte de nuestra plataforma.\n\nSaludos,\nEl equipo de seguridad"
+  },
+  "login_alert": {
+    "subject": "Nuevo inicio de sesión detectado 👤",
+    "text": "Hola {{name}},\n\nSe detectó un inicio de sesión en tu cuenta.\n\nSi fuiste tú, ignora este mensaje. Si no reconoces esta actividad, cambia tu contraseña inmediatamente y contacta al soporte.\n\nSaludos,\nEl equipo de seguridad"
+  },
+  "welcome": {
+    "subject": "¡Bienvenido a nuestra plataforma 🎉!",
+    "text": "Hola {{name}},\n\nTu registro fue exitoso. Ahora formas parte de nuestra comunidad.\n\nExplora, disfruta y aprovecha todas las funcionalidades que tenemos para ti.\n\n¡Nos alegra tenerte con nosotros!\n\nSaludos,\nEl equipo"
+  }
+}

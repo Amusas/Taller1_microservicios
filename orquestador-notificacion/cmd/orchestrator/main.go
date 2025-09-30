@@ -15,6 +15,7 @@ import (
 	"github.com/andrew/orquestador-notificacion/internal/logger"
 	"github.com/andrew/orquestador-notificacion/internal/processor"
 	"github.com/andrew/orquestador-notificacion/internal/service"
+
 	kafka "github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
 )
@@ -23,81 +24,76 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// load config
+	// 1. Cargar configuración desde env
 	cfg := config.LoadFromEnv()
 
-	// logger
+	// 2. Iniciar logger
 	z, err := logger.NewLogger()
 	if err != nil {
 		log.Fatalf("failed to create logger: %v", err)
 	}
-	defer func(z *zap.Logger) {
-		_ = z.Sync()
-	}(z)
+	defer z.Sync()
 
-	// Verificar conectividad con Kafka antes de iniciar
+	// 3. Verificar conexión a Kafka
 	z.Info("checking kafka connectivity...", zap.Strings("brokers", cfg.KafkaBrokers))
 	if err := checkKafkaConnectivity(cfg.KafkaBrokers); err != nil {
 		z.Fatal("kafka not available", zap.Error(err))
 	}
 	z.Info("kafka connectivity confirmed")
 
-	// Crear producer para topic de notificaciones
+	// 4. Crear producer para topic de salida (notificaciones)
 	producerTopic := getEnv("KAFKA_PRODUCER_TOPIC", "notifications")
 	producer := kafkaPkg.NewProducer(cfg.KafkaBrokers, producerTopic)
 
-	// infra: registry, services, handlers
+	// 5. Servicios y Handlers
 	reg := handler.NewRegistry()
-	userSvc := service.NewUserService(producer, z) // ⬅️ ahora con producer y logger
+	userSvc := service.NewUserService(producer, z)
 
-	// Registrar handlers
-	reg.Register(handler.NewUserRegisteredHandler(userSvc, z))
-	reg.Register(handler.NewUserLoginHandler(userSvc, z))
-	reg.Register(handler.NewPasswordChangedHandler(userSvc, z))
-	reg.Register(handler.NewOtpRequestedHandler(userSvc, z))
+	// Cada handler interpreta un tipo de evento y llama al servicio
+	reg.Register(handler.NewUserRegisteredHandler(userSvc, z))  // welcome
+	reg.Register(handler.NewPasswordChangedHandler(userSvc, z)) // resetPassword
+	reg.Register(handler.NewOtpRequestedHandler(userSvc, z))    // OTP
+	reg.Register(handler.NewUserLoginHandler(userSvc, z))       // login_alert
+
+	// etc.
 
 	proc := processor.NewProcessor(reg, z)
 
-	// kafka reader config - escucha el topic user-events
+	// 6. Consumer - escucha el topic de entrada (user-events)
 	rCfg := kafka.ReaderConfig{
 		Brokers:  cfg.KafkaBrokers,
-		Topic:    cfg.KafkaTopic,
+		Topic:    cfg.KafkaTopic, // ej: user-events
 		GroupID:  cfg.GroupID,
-		MinBytes: 10e3, // 10KB
-		MaxBytes: 10e6, // 10MB
+		MinBytes: 10e3,
+		MaxBytes: 10e6,
 	}
-
 	consumer := kafkaPkg.NewConsumer(rCfg, proc, z)
 
-	// Iniciar consumer con manejo de panics
+	// 7. Iniciar consumer
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
 				z.Error("consumer panic recovered", zap.Any("panic", r))
 			}
 		}()
-		consumer.Start(ctx, 4) // 4 workers
+		consumer.Start(ctx, 4) // 4 workers en paralelo
 	}()
 
-	// graceful shutdown
+	// 8. Esperar señal para apagado
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig
 	z.Info("shutdown requested")
 	cancel()
 
-	// allow some time to finish
+	// 9. Cierre ordenado
 	time.Sleep(3 * time.Second)
-	if err := consumer.Close(); err != nil {
-		z.Error("error closing consumer", zap.Error(err))
-	}
-	if err := producer.Close(); err != nil { // ⬅️ cerramos producer también
-		z.Error("error closing producer", zap.Error(err))
-	}
+	_ = consumer.Close()
+	_ = producer.Close()
 	z.Info("bye")
 }
 
-// Función para verificar conectividad con Kafka - acepta []string
+// Verifica que Kafka esté disponible
 func checkKafkaConnectivity(brokers []string) error {
 	if len(brokers) == 0 {
 		return fmt.Errorf("no kafka brokers configured")
@@ -107,18 +103,15 @@ func checkKafkaConnectivity(brokers []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to broker %s: %w", brokers[0], err)
 	}
-	defer func(conn *kafka.Conn) {
-		_ = conn.Close()
-	}(conn)
+	defer conn.Close()
 
-	_, err = conn.Brokers()
-	if err != nil {
+	if _, err = conn.Brokers(); err != nil {
 		return fmt.Errorf("failed to get brokers list: %w", err)
 	}
-
 	return nil
 }
 
+// Helper para valores por defecto
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v

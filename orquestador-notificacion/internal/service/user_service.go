@@ -2,8 +2,7 @@ package service
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
+
 	"go.uber.org/zap"
 )
 
@@ -25,48 +24,44 @@ func NewUserService(producer Producer, logger *zap.Logger) UserService {
 }
 
 func (s *userServiceImpl) OnUserRegistered(ctx context.Context, id int, email, name, phone string) error {
-	notif := map[string]interface{}{
-		"user_id":  id,
-		"email":    email,
-		"name":     name,
-		"channel":  "EMAIL",
-		"template": "validate_account",
+	data := map[string]interface{}{
+		"user_id": id,
+		"name":    name,
+		"phone":   phone,
 	}
 
-	payload, err := json.Marshal(notif)
+	err := s.producer.SendEvent(ctx, "EMAIL", "validate_account", email, data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal notification: %w", err)
-	}
-
-	if err := s.producer.Send(ctx, []byte(email), payload); err != nil {
 		s.logger.Error("failed to send notification", zap.Error(err))
 		return err
 	}
 
-	s.logger.Info("notification event published", zap.String("email", email))
+	s.logger.Info("notification event published",
+		zap.String("type", "EMAIL"),
+		zap.String("template", "validate_account"),
+		zap.String("to", email),
+	)
 	return nil
 }
 
 func (s *userServiceImpl) SendNotification(ctx context.Context, id int, email, name, phone, channel, template string) error {
-	notif := map[string]interface{}{
-		"user_id":  id,
-		"email":    email,
-		"name":     name,
-		"channel":  channel,
-		"template": "password_recovery",
+	to := chooseTarget(channel, email, phone)
+	data := map[string]interface{}{
+		"user_id": id,
+		"name":    name,
+		"phone":   phone,
 	}
 
-	payload, err := json.Marshal(notif)
+	err := s.producer.SendEvent(ctx, channel, template, to, data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal notification: %w", err)
-	}
-
-	if err := s.producer.Send(ctx, []byte(email), payload); err != nil {
 		s.logger.Error("failed to send notification", zap.Error(err))
 		return err
 	}
 
-	s.logger.Info("notification sent", zap.String("channel", channel), zap.String("to", fmt.Sprintf("%s", notif["data"].(map[string]interface{})["to"])))
+	s.logger.Info("notification sent",
+		zap.String("channel", channel),
+		zap.String("to", to),
+	)
 	return nil
 }
 
@@ -78,29 +73,20 @@ func chooseTarget(channel, email, phone string) string {
 }
 
 func (s *userServiceImpl) SendOtpRecovery(ctx context.Context, id int, email, name, url string) error {
-	event := map[string]interface{}{
-		"type":     "PASSWORD_RECOVERY",
-		"user_id":  id,
-		"email":    email,
-		"name":     name,
-		"channel":  "EMAIL",
-		"template": "password_recovery",
-		"data": map[string]string{
-			"url":  url,
-			"name": name,
-		},
+	data := map[string]interface{}{
+		"user_id": id,
+		"name":    name,
+		"url":     url,
 	}
 
-	payload, err := json.Marshal(event)
+	err := s.producer.SendEvent(ctx, "EMAIL", "password_recovery", email, data)
 	if err != nil {
-		return fmt.Errorf("failed to marshal notification: %w", err)
-	}
-
-	if err := s.producer.Send(ctx, []byte(email), payload); err != nil {
-		s.logger.Error("failed to send notification", zap.Error(err))
+		s.logger.Error("failed to send OTP recovery notification", zap.Error(err))
 		return err
 	}
 
-	s.logger.Info("notification sent")
+	s.logger.Info("OTP recovery notification sent",
+		zap.String("to", email),
+	)
 	return nil
 }
