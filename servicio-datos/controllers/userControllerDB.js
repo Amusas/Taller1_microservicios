@@ -6,6 +6,7 @@ const UserRepository = require('../repositories/userRepository');
 const ResponseModel = require('../models/ResponseModel');
 const OtpRepository = require("../repositories/otpRepository");
 const OtpServiceClient = require("../client/otpServiceClient");
+const AccountStatusResponse = require("../models/AccountStatusResponse");
 
 class UserControllerDB {
 
@@ -381,7 +382,56 @@ class UserControllerDB {
             return response.send(res);
         }
     }
-    
+
+    /**
+     * PATCH /api/users/{id}/account_status
+     * Verifica un usuario con estado PENDING_VALIDATION
+     * @param {Object} req - Request object de Express
+     * @param {Object} res - Response object de Express
+     */
+    async verifyUserAccount(req, res) {
+        console.log('🚀 [UserControllerDB] Verificando usuario...');
+
+        const userId = parseInt(req.params.id);
+
+        try {
+            console.log(`✅ [UserControllerDB] Buscando usuario con id: ${userId}`);
+            const user = await this.userRepository.findById(userId);
+
+            if (!user) {
+                const response = ResponseModel.notFound('Usuario no encontrado');
+                response.log('[UserControllerDB] Usuario no encontrado');
+                return response.send(res);
+            }
+
+            console.log(`✅ [UserControllerDB] Usuario obtenido exitosamente con ID: ${user.id}`);
+
+            // 🔍 Verificar existencia y validez del OTP en la base
+            const result = await this.userRepository.verifyAccount(user.id);
+
+            if (!result) {
+                const response = ResponseModel.badRequest('El usuario ya ha sido verifificado o borrado.');
+                console.log(`🚫 [UserControllerDB] Fallo en la verificación del usuario : ${user.id}`);
+                return response.send(res);
+            }
+
+            console.log(`✅ [UserControllerDB] Verificación exitosa para usuario: ${user.email}`);
+
+            const resultResponse = AccountStatusResponse.fromDatabase(result);
+            const response = this._createSuccessResponse(
+                'Usuario verificado exitosamente',
+                resultResponse.toJSON(),
+                200
+            );
+
+            return response.send(res);
+
+        } catch (error) {
+            const response = this._handleControllerError(error);
+            response.log(`🚫 [UserControllerDB] Fallo en la verificación del usuario : ${id}`);
+            return response.send(res);
+        }
+    }
 }
 
 module.exports = UserControllerDB;

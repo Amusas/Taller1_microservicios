@@ -4,6 +4,7 @@ class UserResponse {
         this.email = user.email;
         this.name = user.name;
         this.phone = user.phone;
+        this.account_status = user.account_status;
     }
 
     // Convertir a objeto plano para respuesta JSON
@@ -13,6 +14,7 @@ class UserResponse {
             email: this.email,
             name: this.name,
             phone: this.phone,
+            account_status: this.account_status,
         };
     }
 

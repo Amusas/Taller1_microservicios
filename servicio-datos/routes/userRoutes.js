@@ -56,4 +56,11 @@ router.delete('/:id', userController.deleteUser.bind(userController));
  */
 router.patch('/:id/password', userController.updatePassword.bind(userController));
 
+/**
+ * @route   PATCH /api/users/:id/account_status
+ * @desc    Verificar el usuario
+ * @access  Public
+ */
+router.patch('/:id/account_status', userController.verifyUserAccount.bind(userController));
+
 module.exports = router;

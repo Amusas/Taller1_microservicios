@@ -1,5 +1,5 @@
 -- Crear el ENUM para el estado de cuenta
-CREATE TYPE account_status_enum AS ENUM ('CREATED', 'DELETED', 'VERIFIED');
+CREATE TYPE account_status_enum AS ENUM ('PENDING_VALIDATION', 'DELETED', 'VERIFIED');
 
 CREATE TABLE users (
                        id SERIAL PRIMARY KEY,
@@ -9,7 +9,7 @@ CREATE TABLE users (
                        phone VARCHAR(20), -- nuevo campo
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                       account_status account_status_enum NOT NULL DEFAULT 'CREATED'
+                       account_status account_status_enum NOT NULL DEFAULT 'PENDING_VALIDATION'
 );
 
 /*

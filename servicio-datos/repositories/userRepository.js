@@ -1,6 +1,7 @@
 const pool = require('../config/database');
 const User = require('../models/User');
 const UserResponse = require('../models/UserResponse');
+const AccountStatusResponse = require('../models/AccountStatusResponse');
 
 class UserRepository {
     
@@ -437,8 +438,30 @@ class UserRepository {
             throw new Error(`Error deleting user: ${error.message}`);
         }
     }
-    
-    
+
+    // Verificar cuenta - Cambia account_status de PENDING_VALIDATION a VERIFIED
+    async verifyAccount(id) {
+        try {
+            const query = `
+                UPDATE users 
+                SET account_status = 'VERIFIED'
+                WHERE id = $1 AND account_status = 'PENDING_VALIDATION'
+                RETURNING *
+            `;
+
+            const result = await pool.query(query, [id]);
+
+            if (result.rows.length === 0) {
+                throw new Error(`❌ No se pudo verificar el usuario con ID ${id}. Es posible que no exista o que no esté en estado PENDING_VALIDATION.`);
+            }
+
+            const user = result.rows[0];
+
+            return { account_status: user.account_status };
+        } catch (error) {
+            throw new Error(`Error verifying user: ${error.message}`);
+        }
+    }
 }
 
 module.exports = UserRepository;
