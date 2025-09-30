@@ -1,5 +1,6 @@
 package com.uniquindio.userservice.service.interfaces;
 
+import com.uniquindio.userservice.annotation.IsOwner;
 import com.uniquindio.userservice.dto.*;
 
 
@@ -16,4 +17,6 @@ public interface UserService {
     void deleteUser(int id);
 
     boolean updatePassword(PasswordRecoveryRequest passwordRecoveryRequest, int id);
+
+    AccountStatusResponse verifyUserAccount(int userId);
 }

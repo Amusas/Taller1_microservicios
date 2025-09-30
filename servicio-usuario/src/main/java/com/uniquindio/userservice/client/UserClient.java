@@ -252,5 +252,31 @@ public class UserClient {
                 .toBodilessEntity()
                 .block();
     }
+
+    /**
+     * Elimina un usuario del sistema por su identificador único.
+     *
+     * <p>Este método envía una petición DELETE al endpoint {@code /{id}} del servicio
+     * de usuarios para eliminar permanentemente un usuario.</p>
+     *
+     * <p><strong>Nota:</strong> Este método es bloqueante (usa {@code .block()}) para
+     * mantener compatibilidad con código síncrono existente.</p>
+     *
+     * <p><strong>Advertencia:</strong> Esta operación es irreversible. Una vez eliminado,
+     * el usuario no puede ser recuperado.</p>
+     *
+     * @param id Identificador único del usuario a eliminar
+     * @throws WebClientResponseException si ocurre un error en la comunicación HTTP
+     *         o si el usuario no existe
+     */
+    public AccountStatusResponse verifyUser(int id) {
+        ApiDBResponse<AccountStatusResponse> response =webClient.patch()
+                .uri("/{id}/account_status", id)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<ApiDBResponse<AccountStatusResponse>>() {})
+                .block();
+
+        return response != null ? response.data() : null;
+    }
 }
 

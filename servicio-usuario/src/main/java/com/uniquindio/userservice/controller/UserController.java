@@ -204,4 +204,17 @@ public class UserController {
         log.info("✅ Contraseña actualizada para: {}", id);
         return ResponseEntity.ok("Contraseña reestablecida para el usuario");
     }
+
+    @PatchMapping("/{id}/account_status")
+    @Operation(summary = "Actualizar estado de cuenta", description = "Permite verificar o cambiar el estado de la cuenta de un usuario")
+    public ResponseEntity<AccountStatusResponse> updateAccountStatus(
+            @PathVariable int id
+    ) {
+        log.info("🔄 Actualizando estado de cuenta del usuario {} a {}", id, UserAccountStatusEnum.VERIFIED);
+
+        AccountStatusResponse accountStatus = userService.verifyUserAccount(id);
+
+        return ResponseEntity.ok(accountStatus);
+    }
+
 }

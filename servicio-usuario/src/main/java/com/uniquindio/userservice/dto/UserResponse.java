@@ -1,6 +1,7 @@
 package com.uniquindio.userservice.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * DTO de respuesta que representa a un usuario del sistema.
@@ -28,6 +29,15 @@ public record UserResponse(
         )
         String email,
 
-        String phone
+        @Schema(
+                description = "Telefono del usuario",
+                example = "3001114444"
+        )
+        String phone,
+
+        @Schema(
+                description = "Estado de cuenta del usuario",
+        example = "VERIFIED")
+        UserAccountStatusEnum account_status
 ) {
 }

@@ -6,11 +6,7 @@ import com.uniquindio.userservice.client.UserNotificationProducer;
 import com.uniquindio.userservice.dto.*;
 import com.uniquindio.userservice.exception.InvalidOTPException;
 import com.uniquindio.userservice.exception.OtpCreationException;
-import com.uniquindio.userservice.exception.userException.DuplicateEmailException;
-import com.uniquindio.userservice.exception.userException.ExternalServiceException;
-import com.uniquindio.userservice.exception.userException.InvalidIdException;
-import com.uniquindio.userservice.exception.userException.UserNotFoundException;
-import com.uniquindio.userservice.exception.userException.EmailAndIdNotFromSameUserException;
+import com.uniquindio.userservice.exception.userException.*;
 import com.uniquindio.userservice.service.interfaces.UserService;
 import com.uniquindio.userservice.util.PasswordUtils;
 import lombok.RequiredArgsConstructor;
@@ -103,7 +99,7 @@ public class UserServiceImpl implements UserService {
             log.info("Intentando registrar usuario con email: {}", encryptedUser.email());
             UserResponse response = userClient.registerUser(encryptedUser);
             log.info("Usuario registrado exitosamente con id: {}", response.id());
-            userNotificationProducer.sendNewUser(response);
+            userNotificationProducer.sendWelcome(response);
             return response;
         } catch (WebClientResponseException e) {
             log.error("Error al registrar usuario. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());
@@ -228,6 +224,7 @@ public class UserServiceImpl implements UserService {
      * <p><strong>Manejo de errores:</strong></p>
      * <ul>
      *   <li><strong>404 (Not Found):</strong> Se lanza {@link UserNotFoundException} si el usuario no existe</li>
+     *   <li><strong>406 (Not Verified):</strong> Se lanza {@link UserAccountNotVerifiedException} si el usuario con el correo provisto no está verificado</li>    *
      *   <li><strong>409 (Conflict):</strong> Se lanza {@link DuplicateEmailException} si el nuevo email ya existe</li>
      *   <li><strong>Otros códigos:</strong> Se lanza {@link ExternalServiceException} con detalles del error</li>
      * </ul>
@@ -240,6 +237,7 @@ public class UserServiceImpl implements UserService {
      * @return {@link UserResponse} con la información actualizada del usuario
      * @throws InvalidIdException si el ID proporcionado no es válido (≤ 0)
      * @throws UserNotFoundException si el usuario con el ID especificado no existe
+     * @throws UserAccountNotVerifiedException si el usuario con el correo provisto no está verificado
      * @throws DuplicateEmailException si el nuevo correo electrónico ya está registrado
      * @throws ExternalServiceException si ocurre un error de comunicación con el servicio externo
      * @see UserUpdateRequest
@@ -251,9 +249,16 @@ public class UserServiceImpl implements UserService {
     @IsOwner
     public UserResponse updateUser(int id, UserUpdateRequest userUpdateRequest) {
         validateUserId(id);
+        String email = userUpdateRequest.email();
         try {
+            UserResponse response = userClient.getUserById(id);
+            if(response.account_status()!=UserAccountStatusEnum.VERIFIED){
+                log.error("Error en actualización de contraseña: Usuario con el email {}, con estado de cuenta {} (Debe ser {})", email, response.account_status(), UserAccountStatusEnum.VERIFIED);
+                throw new UserAccountNotVerifiedException("Usuario con email: "+ email + " no está verificado. Por favor verificar.");
+            }
+
             log.info("Intentando actualizar usuario con id: {}", id);
-            UserResponse response = userClient.updateUser(id, userUpdateRequest);
+            response = userClient.updateUser(id, userUpdateRequest);
             log.info("Usuario actualizado exitosamente con id: {}", response.id());
             return response;
         } catch (WebClientResponseException e) {
@@ -261,7 +266,11 @@ public class UserServiceImpl implements UserService {
 
             if (e.getStatusCode().value() == 404) {
                 throw new UserNotFoundException("Usuario con id " + id + " no encontrado.");
-            } else if (e.getStatusCode().value() == 409) {
+            }
+            else if (e.getStatusCode().value() == 406) {
+                throw new UserAccountNotVerifiedException("Usuario con email " + email + " no verificado.");
+            }
+            else if (e.getStatusCode().value() == 409) {
                 throw new DuplicateEmailException("El correo electrónico ya está registrado.");
             } else {
                 throw new ExternalServiceException(
@@ -372,7 +381,7 @@ public class UserServiceImpl implements UserService {
      * <p><strong>Manejo de errores:</strong></p>
      * <ul>
      *   <li><strong>404 (Not Found):</strong> Se lanza {@link UserNotFoundException} si el usuario no existe</li>
-     *   <li><strong>404 (Not Found):</strong> Se lanza {@link EmailAndIdNotFromSameUserException} si el usuario con el correo provisto no coincide con el usuario con el id provisto</li>
+     *   <li><strong>405 (Not Match):</strong> Se lanza {@link EmailAndIdNotFromSameUserException} si el usuario con el correo provisto no coincide con el usuario con el id provisto</li>
      *   <li><strong>409 (Conflict):</strong> Se lanza {@link OtpCreationException} si hay un error con el otp</li>
      *   <li><strong>Otros códigos:</strong> Se lanza {@link ExternalServiceException} con detalles del error</li>
      * </ul>
@@ -401,8 +410,8 @@ public class UserServiceImpl implements UserService {
 
             log.info("Intentando cambiar la contraseña para el usuario con id: {}, e email: {}, usando el OTP: {}", id, email, otp);
             PasswordRecoveryRequest pr = PasswordUtils.encryptPassword(passwordRecoveryRequest);
-            userNotificationProducer.sendPasswordChanged(response);
             userClient.recoverPassword(pr, id);
+            userNotificationProducer.sendPasswordChanged(response);
 
             return true;
 
@@ -411,12 +420,81 @@ public class UserServiceImpl implements UserService {
             if (e.getStatusCode().value() == 404) {
                 throw new UserNotFoundException("Usuario con email " + email + " no encontrado.");
             }
+            if (e.getStatusCode().value() == 405) {
+                throw new EmailAndIdNotFromSameUserException("Al usuario con id " + id + " no le pertenece el email " + email);
+            }
             if (e.getStatusCode().value() == 400){
                 throw new InvalidOTPException("El opt es invalido o ha expirado");
             }
             throw new ExternalServiceException(
                     "Error al comunicarse con el servicio de usuarios: " + e.getResponseBodyAsString()
             );
+        }
+    }
+
+    /**
+     * Cambia el estado de un usuario de {@link UserAccountStatusEnum#PENDING_VALIDATION} a {@link UserAccountStatusEnum#VERIFIED}.
+     *
+     * <p>Este método implementa la lógica de negocio para la activación de usuarios que ya existen en el sistema
+     * pero aún no han completado su validación. El cambio solo se realiza si el usuario se encuentra en estado
+     * {@code PENDING_VALIDATION}.</p>
+     *
+     * <p><strong>Validaciones previas:</strong></p>
+     * <ul>
+     *   <li>El ID del usuario debe ser un entero positivo mayor que 0</li>
+     *   <li>El usuario debe existir y tener estado {@code PENDING_VALIDATION}</li>
+     *   <li>Se lanza {@link InvalidIdException} si el ID no cumple con los criterios</li>
+     *   <li>Se lanza {@link InvalidUserStatusException} si el usuario no está en estado {@code PENDING_VALIDATION}</li>
+     * </ul>
+     *
+     * <p><strong>Manejo de errores:</strong></p>
+     * <ul>
+     *   <li><strong>404 (Not Found):</strong> Se lanza {@link UserNotFoundException} si el usuario no existe</li>
+     *   <li><strong>Otros códigos:</strong> Se lanza {@link ExternalServiceException} con detalles del error</li>
+     * </ul>
+     *
+     * <p><strong>Logging:</strong> Se registra información detallada sobre la operación,
+     * incluyendo el ID del usuario actualizado y el resultado del cambio de estado.</p>
+     *
+     * @param userId Identificador único del usuario cuyo estado se actualizará
+     * @throws InvalidIdException si el ID proporcionado no es válido (≤ 0)
+     * @throws UserNotFoundException si el usuario con el ID especificado no existe
+     * @throws InvalidUserStatusException si el usuario no está en estado {@code PENDING_VALIDATION}
+     * @throws ExternalServiceException si ocurre un error de comunicación con el servicio externo
+     * @see UserClient#verifyUser(int)
+     * @see #validateUserId(int)
+     */
+    @Override
+    public AccountStatusResponse verifyUserAccount(int userId) {
+        validateUserId(userId);
+        try {
+            log.info("Iniciando verificación de usuario con id: {}", userId);
+
+            UserResponse response = userClient.getUserById(userId);
+            if (response.account_status() == UserAccountStatusEnum.VERIFIED) {
+                throw new InvalidUserStatusException("El usuario ya esta verificado.");
+            }
+
+            if (response.account_status() == UserAccountStatusEnum.DELETED) {
+                throw new InvalidUserStatusException("El usuario se encuentra elimindado.");
+            }
+
+            AccountStatusResponse response2 = userClient.verifyUser(userId);
+            userNotificationProducer.sendAccountVerified(response);
+            log.info("Usuario con id {} verificado exitosamente.", userId);
+
+            return response2;
+
+
+        } catch (WebClientResponseException e) {
+            log.error("Error al verificar usuario. Código: {}, Detalle: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            if (e.getStatusCode().value() == 404) {
+                throw new UserNotFoundException("Usuario con id " + userId + " no encontrado.");
+            } else {
+                throw new ExternalServiceException(
+                        "Error al comunicarse con el servicio de usuarios: " + e.getResponseBodyAsString()
+                );
+            }
         }
     }
 }

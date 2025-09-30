@@ -6,5 +6,6 @@ public record UserAuthResponse(
         String email,
         String phone,
         String password // encriptada en DB
+
 ) {
 }

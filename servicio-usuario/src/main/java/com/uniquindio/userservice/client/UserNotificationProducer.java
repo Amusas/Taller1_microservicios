@@ -50,7 +50,7 @@ public class UserNotificationProducer {
 
 
     //Envia un evento a kafka sobre la creacipon de un nuevo usuario en el sistema
-    public void sendNewUser(UserResponse user) {
+    public void sendWelcome(UserResponse user) {
         EventMessage event = EventMessage.of(
                 EventType.USER_REGISTERED,
                 "user-service",
@@ -58,7 +58,8 @@ public class UserNotificationProducer {
                         "id", user.id(),
                         "name", user.name(),
                         "email", user.email(),
-                        "phone", user.phone()
+                        "phone", user.phone(),
+                        "url", "http://local-host:8080/api/v1/users/"+user.id()+"/account_status"
                 )
         );
         send(event);
@@ -89,5 +90,17 @@ public class UserNotificationProducer {
         }
     }
 
+    public void sendAccountVerified(UserResponse user) {
+        EventMessage event = EventMessage.of(
+                EventType.USER_VERIFIED,
+                "user-service",
+                Map.of(
+                        "id", user.id(),
+                        "name", user.name(),
+                        "email", user.email()
+                )
+        );
+        send(event);
+    }
 }
 
