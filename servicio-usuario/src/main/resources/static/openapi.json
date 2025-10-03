@@ -314,6 +314,102 @@
         }
       }
     },
+    "/api/v1/users/{id}/account_status": {
+      "patch": {
+        "tags": ["Usuarios"],
+        "summary": "Actualizar estado de cuenta",
+        "description": "Cambia el estado de un usuario de `PENDING_VALIDATION` a `VERIFIED`. Solo se permite si el usuario existe y está en estado `PENDING_VALIDATION`.",
+        "operationId": "updateAccountStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Identificador único del usuario cuyo estado se actualizará (debe ser mayor a 0).",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 1
+            },
+            "example": 101
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Estado de cuenta actualizado correctamente.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountStatusResponse"
+                },
+                "examples": {
+                  "verificado": {
+                    "summary": "Usuario verificado exitosamente",
+                    "value": {
+                      "account_status": "VERIFIED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Solicitud inválida (por ejemplo, ID no válido o usuario no está en estado `PENDING_VALIDATION`).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "idInvalido": {
+                    "summary": "El ID proporcionado no es válido",
+                    "value": {
+                      "status": 400,
+                      "message": "El ID debe ser un entero positivo mayor que 0",
+                      "timestamp": "2025-09-07T15:35:00Z"
+                    }
+                  },
+                  "estadoInvalido": {
+                    "summary": "Usuario no está en estado pendiente de validación",
+                    "value": {
+                      "status": 400,
+                      "message": "El usuario ya está verificado o se encuentra eliminado.",
+                      "timestamp": "2025-09-07T15:36:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/UserNotFoundError"
+          },
+          "500": {
+            "description": "Error al comunicarse con el servicio de usuarios.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "servicioExterno": {
+                    "summary": "Error del servicio externo",
+                    "value": {
+                      "status": 500,
+                      "message": "Error al comunicarse con el servicio de usuarios: timeout",
+                      "timestamp": "2025-09-07T15:37:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailableError"
+          }
+        }
+      }
+    },
     "/api/v1/users/{id}/password": {
       "patch": {
         "security": [],
@@ -511,6 +607,19 @@
   },
   "components": {
     "schemas": {
+      "AccountStatusResponse": {
+        "type": "object",
+        "description": "Respuesta con el estado de la cuenta del usuario tras la verificación",
+        "properties": {
+          "account_status": {
+            "type": "string",
+            "description": "Estado actual de la cuenta",
+            "enum": ["PENDING_VALIDATION", "VERIFIED", "DELETED"],
+            "example": "VERIFIED"
+          }
+        },
+        "required": ["account_status"]
+      },
       "UserUpdateRequest": {
         "type": "object",
         "description": "Solicitud para actualizar la información de un usuario",
